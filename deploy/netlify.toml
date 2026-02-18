@@ -1,0 +1,11 @@
+# Netlify configuration for music-mix frontend
+
+[build]
+  command = "echo 'Static site - no build needed'"
+  publish = "demo"
+
+# Redirect all requests to index.html for SPA behavior
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

@@ -1,0 +1,19 @@
+services:
+  - name: music-mix-api
+    type: web
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --workers 2 --timeout 120
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+      - key: MAX_CONTENT_LENGTH
+        value: 52428800
+      - key: UPLOAD_FOLDER
+        value: /tmp/music-mix-uploads
+      - key: OUTPUT_FOLDER
+        value: /tmp/music-mix-outputs
+    disk:
+      name: music-mix-storage
+      mountPath: /tmp
+      sizeGB: 1

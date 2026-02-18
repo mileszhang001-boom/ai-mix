@@ -1,50 +1,135 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# music-mix Constitution
 
-## Core Principles
+## 核心原则
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. 模块化架构
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+混音算法核心与前端 UI 完全解耦。算法库（mixer_core）必须是独立的、可导入的 Python 包，不依赖任何 UI 框架。主播放器可通过 import 直接调用混音功能，无需通过 CLI 中转。
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+- 混音算法库必须独立发布和管理
+- 每个模块必须独立测试
+- 明确的模块边界和接口定义
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### II. CLI 接口
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+核心功能必须通过 CLI 暴露，便于自动化测试和算法调试。
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+- 输入：支持指定单个 mp3 文件或整个目录
+- 输出：支持 JSON 格式输出过渡参数，便于程序解析
+- 错误输出到 stderr，成功输出到 stdout
+- 支持参数：`--input`, `--output`, `--mix-duration`, `--format json`
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### III. 测试驱动 (必须)
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+TDD 流程必须严格执行，不可绕过。
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+1. 编写测试用例 → 用户确认 → 测试失败 → 实现代码 → 测试通过 → 重构
+2. 混音算法必须有单元测试覆盖
+3. Red-Green-Refactor 循环必须遵守
 
-## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
+### IV. 文件驱动
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+所有数据来自本地文件系统，不依赖在线服务。
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+- 支持扫描本地 mp3 文件库
+- 读取 ID3 标签获取元数据
+- 配置文件使用 YAML/JSON 格式
+
+### V. BPM 检测与节拍对齐 (核心)
+
+这是项目的核心算法能力，必须精确实现。
+
+- 实现 BPM 检测算法
+- 实现节拍对齐（Beat Matching）
+- 支持多种过渡类型：Crossfade、Beat-sync、Echo fade
+- 日志输出检测到的 BPM、节拍位置、选用的过渡类型
+
+### VI. 可观测性
+
+详细的日志输出便于算法调优和问题排查。
+
+- 结构化日志记录
+- 输出关键指标：BPM、节拍位置、过渡耗时、音量包络
+- 支持日志级别配置
+
+### VII. 版本管理
+
+采用语义化版本（Semantic Versioning）。
+
+- MAJOR：算法核心逻辑重大变更（如过渡策略重构）
+- MINOR：新增过渡类型、新增功能
+- BUGFIX：修复非算法逻辑问题
+
+### VIII. 测试闭环
+
+每个完整模块完成后，必须验证其可正常工作，方可进入下一模块。避免问题在后期累积导致无法解决。
+
+- 模块完成后立即进行功能验证
+- 建立模块级冒烟测试，快速发现集成问题
+- 遇到阻塞性 bug 必须立即解决，不得带病推进
+- 定期进行整体集成测试，确保各模块协同正常
+
+## 技术约束
+
+### 技术栈
+
+- **算法核心**：Python（librosa/dumbdown 实现音频分析）
+- **CLI 工具**：Python + Click/Typer
+- **前端 Demo**：HTML + JavaScript（快速启动，便于调试）
+- **音频处理**：pydub（跨格式支持预留）
+
+### 代码组织
+
+```
+music_mix/
+├── mixer_core/          # 核心算法库
+│   ├── __init__.py
+│   ├── bpm_detector.py  # BPM 检测
+│   ├── beat_matcher.py  # 节拍对齐
+│   ├── transition.py    # 过渡策略
+│   └── cli.py           # CLI 入口
+├── demo/                # 前端播放器 Demo
+│   ├── index.html
+│   └── player.js
+├── tests/               # 测试用例
+└── specs/               # 需求文档
+```
+
+## 开发工作流
+
+### 阶段划分
+
+1. **算法验证**：CLI 工具 + 单元测试，验证 BPM 检测和节拍对齐
+2. **Demo 开发**：前端播放器接入算法输出
+3. **集成封装**：算法库封装为主播放器可调用的形式
+
+### 质量门禁
+
+- 算法单元测试覆盖率 > 80%
+- CLI 工具必须通过 `--help` 和 `--format json` 验证
+- 前端 Demo 必须能在浏览器直接打开运行
+
+### 审查流程
+
+- 所有 PR 必须验证测试通过
+- 算法变更必须附带性能对比数据
+- 复杂度必须有明确理由
+
+## 治理
+
+### 宪法权威
+
+本宪法高于所有其他开发实践。违反任何 MUST 条款的代码变更不得合并。
+
+### 修订流程
+
+1. 提出修订提案，说明理由和影响范围
+2. 评估对现有功能的影响，制定迁移计划
+3. 评审通过后更新版本号和发布日期
+
+### 持续改进
+
+- 每完成一个里程碑后回顾宪法条款
+- 记录实践中的经验教训
+
+**Version**: 1.0.1 | **Ratified**: 2026-02-17 | **Last Amended**: 2026-02-17
