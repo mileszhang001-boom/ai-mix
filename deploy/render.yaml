@@ -4,7 +4,7 @@ services:
     region: oregon
     rootDir: .
     buildCommand: pip install -r deploy/requirements.txt && pip install -e .
-    startCommand: gunicorn "deploy.app_final:app" --workers 1 --timeout 180 --bind "0.0.0.0:5000"
+    startCommand: cd /opt/render/project/src && python deploy/app_minimal.py
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.6
