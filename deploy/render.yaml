@@ -2,9 +2,9 @@ services:
   - name: music-mix-api
     type: web
     region: oregon
-    rootDir: .
+    runtime: python
     buildCommand: pip install -r deploy/requirements.txt && pip install -e .
-    startCommand: cd /opt/render/project/src && python deploy/app_minimal.py
+    startCommand: nohup python deploy/app_minimal.py > /tmp/app.log 2>&1 &
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.6
