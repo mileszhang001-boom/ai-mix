@@ -67,6 +67,11 @@ def health():
     return jsonify({"status": "ok"})
 
 
+@app.route("/favicon.ico")
+def favicon():
+    return "", 204  # 返回空响应，忽略 favicon 请求
+
+
 @app.route("/api/mix", methods=["POST"])
 def mix():
     import uuid
