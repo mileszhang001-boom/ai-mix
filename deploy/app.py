@@ -28,7 +28,7 @@ mixer = Mixer()
 @app.route("/")
 def index():
     """前端页面"""
-    return send_from_directory(app.config["static_folder"], "index.html")
+    return send_from_directory("demo", "index.html")
 
 
 @app.route("/api/mix", methods=["POST"])
