@@ -93,7 +93,7 @@ git push -u origin main
 
 | 变量名 | 值 | 必需 |
 |----------|-----|------|
-| `PYTHON_VERSION` | `3.11` | 否 |
+| `PYTHON_VERSION` | `3.11.6` | 否 |
 | `PORT` | `5000` | 否（Render 自动设置） |
 | `MAX_CONTENT_LENGTH` | `52428800` | 否 |
 | `UPLOAD_FOLDER` | `/tmp/music-mix-uploads` | 否 |
