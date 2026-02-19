@@ -2,8 +2,9 @@ services:
   - name: music-mix-api
     type: web
     region: oregon
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --workers 2 --timeout 120
+    rootDir: .
+    buildCommand: pip install -r deploy/requirements.txt && pip install -e .
+    startCommand: gunicorn deploy.app:app --workers 2 --timeout 120
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.6
