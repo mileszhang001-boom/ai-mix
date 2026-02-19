@@ -142,41 +142,65 @@ def evaluate():
         if "track_a" not in request.files or "track_b" not in request.files:
             return jsonify({"error": "Missing files"}), 400
 
-        m = get_mixer()
+        print("开始评估...")
 
-        track_a = request.files["track_a"]
-        track_b = request.files["track_b"]
+        # 添加超时处理
+        import signal
 
-        track_a_path = os.path.join(
-            app.config["UPLOAD_FOLDER"], f"{uuid.uuid4()}_{secure_filename(track_a.filename)}"
-        )
-        track_b_path = os.path.join(
-            app.config["UPLOAD_FOLDER"], f"{uuid.uuid4()}_{secure_filename(track_b.filename)}"
-        )
+        def timeout_handler(signum, frame):
+            raise TimeoutError("音频分析超时")
 
-        track_a.save(track_a_path)
-        track_b.save(track_b_path)
-
-        result = m.evaluate_compatibility(track_a_path, track_b_path)
+        # 设置超时为 60 秒
+        signal.signal(signal.SIGALRM, timeout_handler)
+        signal.alarm(60)
 
         try:
-            os.remove(track_a_path)
-            os.remove(track_b_path)
-        except:
-            pass
+            m = get_mixer()
 
-        return jsonify(
-            {
-                "success": True,
-                "score": result["score"],
-                "recommendation": result["recommendation"],
-                "reason": result["reason"],
-                "bpm_a": result["bpm_a"],
-                "bpm_b": result["bpm_b"],
-            }
-        )
+            track_a = request.files["track_a"]
+            track_b = request.files["track_b"]
+
+            track_a_path = os.path.join(
+                app.config["UPLOAD_FOLDER"], f"{uuid.uuid4()}_{secure_filename(track_a.filename)}"
+            )
+            track_b_path = os.path.join(
+                app.config["UPLOAD_FOLDER"], f"{uuid.uuid4()}_{secure_filename(track_b.filename)}"
+            )
+
+            track_a.save(track_a_path)
+            track_b.save(track_b_path)
+
+            print(f"文件已保存: {track_a_path}, {track_b_path}")
+
+            result = m.evaluate_compatibility(track_a_path, track_b_path)
+
+            signal.alarm(0)  # 取消超时
+
+            print(f"评估完成: {result}")
+
+            try:
+                os.remove(track_a_path)
+                os.remove(track_b_path)
+            except:
+                pass
+
+            return jsonify(
+                {
+                    "success": True,
+                    "score": result["score"],
+                    "recommendation": result["recommendation"],
+                    "reason": result["reason"],
+                    "bpm_a": result["bpm_a"],
+                    "bpm_b": result["bpm_b"],
+                }
+            )
+        except TimeoutError as te:
+            signal.alarm(0)
+            print(f"评估超时: {te}")
+            return jsonify({"error": "分析超时，请尝试更短的音频文件"}), 504
+
     except Exception as e:
-        print(f"Evaluate error: {e}")
+        print(f"评估错误: {e}")
         import traceback
 
         traceback.print_exc()
