@@ -1,0 +1,11 @@
+{
+  "buildCommand": "pip install -r deploy/requirements.txt",
+  "installCommand": "pip install -r deploy/requirements.txt",
+  "framework": null,
+  "functions": {
+    "api/**/*.py": {
+      "runtime": "python3.11",
+      "maxDuration": 60
+    }
+  }
+}
