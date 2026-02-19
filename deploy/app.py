@@ -3,12 +3,41 @@ Flask API Server for music-mix (Production Version)
 """
 
 import os
+import sys
 import uuid
-from flask import Flask, request, jsonify, send_from_directory, send_file
-from flask_cors import CORS
-from werkzeug.utils import secure_filename
 
-from mixer_core import Mixer
+# 添加项目根目录到 Python 路径
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+try:
+    from flask import Flask, request, jsonify, send_from_directory, send_file
+    from flask_cors import CORS
+    from werkzeug.utils import secure_filename
+
+    print("✓ Flask 依赖加载成功")
+except ImportError as e:
+    print(f"✗ Flask 依赖加载失败: {e}")
+    sys.exit(1)
+
+try:
+    from mixer_core.mixer import Mixer
+
+    print("✓ Mixer 模块导入成功")
+except ImportError as e:
+    print(f"✗ Mixer 模块导入失败: {e}")
+    print(f"  Python 路径: {sys.path}")
+    print(f"  当前目录: {os.getcwd()}")
+    print(f"  文件所在: {os.path.dirname(os.path.abspath(__file__))}")
+    sys.exit(1)
+
+try:
+    from mixer_core import Mixer
+
+    print("✓ Mixer 模块导入成功")
+except ImportError as e:
+    print(f"✗ Mixer 模块导入失败: {e}")
+    print("  请确保已安装 mixer_core: pip install -e .")
+    sys.exit(1)
 
 app = Flask(__name__, static_folder="demo", static_url_path="")
 CORS(app)  # 启用跨域支持
