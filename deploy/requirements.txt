@@ -5,13 +5,12 @@ scipy>=1.11.0
 soundfile>=0.12.0
 tqdm>=4.65.0
 
-# Audio processing
+# Audio processing - pydub for lightweight analysis
 pydub>=0.25.1
 
 # Web
 flask>=3.0.0
 flask-cors>=4.0.0
-gunicorn>=21.2.0
 werkzeug>=3.0.0
 
 # CLI

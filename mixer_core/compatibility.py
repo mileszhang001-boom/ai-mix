@@ -93,14 +93,41 @@ def recommend_strategy(
 
 
 class TrackAnalyzer:
-    """单曲分析器"""
+    """单曲分析器 - 轻量版"""
 
-    def __init__(self, sr: int = 16000):  # 降低采样率以提高速度
+    def __init__(self, sr: int = 16000):
         self.sr = sr
+        # 尝试使用轻量分析
+        try:
+            from mixer_core.quick_analyze import quick_analyze
+
+            self.use_quick = True
+        except ImportError:
+            self.use_quick = False
 
     def analyze(self, audio_path: str) -> dict:
         """分析单曲，返回特征字典"""
-        y, sr = librosa.load(audio_path, sr=self.sr)
+
+        if self.use_quick:
+            # 使用轻量分析
+            try:
+                from mixer_core.quick_analyze import quick_analyze
+
+                result = quick_analyze(audio_path)
+
+                # 兼容原接口
+                return {
+                    "bpm": result.get("bpm", 120),
+                    "confidence": result.get("confidence", 0.5),
+                    "key": result.get("key", "C"),
+                    "key_confidence": 0.5,
+                    "duration": result.get("duration", 180),
+                }
+            except Exception as e:
+                print(f"轻量分析失败，回退到标准方法: {e}")
+
+        # 标准方法（完整加载）
+        y, sr = librosa.load(audio_path, sr=self.sr, duration=60)  # 最多加载60秒
 
         # BPM和节拍
         tempo, beats = librosa.beat.beat_track(y=y, sr=sr)
