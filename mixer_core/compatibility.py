@@ -95,7 +95,7 @@ def recommend_strategy(
 class TrackAnalyzer:
     """单曲分析器"""
 
-    def __init__(self, sr: int = 22050):
+    def __init__(self, sr: int = 16000):  # 降低采样率以提高速度
         self.sr = sr
 
     def analyze(self, audio_path: str) -> dict:

@@ -50,7 +50,7 @@ HARMONIC_COMPATIBLE = {
 }
 
 
-def detect_key(audio_path: str, sr: int = 22050) -> tuple[str, int]:
+def detect_key(audio_path: str, sr: int = 16000) -> tuple[str, int]:
     """
     检测歌曲调性
 

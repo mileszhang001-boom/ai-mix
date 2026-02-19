@@ -16,7 +16,7 @@ class BeatTracker:
     """节拍追踪器"""
 
     def __init__(self):
-        self.sr = 22050
+        self.sr = 16000  # 降低采样率以提高速度
         self.hop_length = 512
 
     def track(self, audio_path: str) -> dict:

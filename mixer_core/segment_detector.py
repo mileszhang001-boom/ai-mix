@@ -12,7 +12,7 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 
-def detect_segments(audio_path: str, sr: int = 22050) -> dict:
+def detect_segments(audio_path: str, sr: int = 16000) -> dict:
     """
     检测歌曲结构：前奏、主歌、副歌、尾奏
 

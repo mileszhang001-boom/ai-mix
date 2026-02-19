@@ -16,7 +16,7 @@ class BPMDetector:
     """BPM 检测器"""
 
     def __init__(self):
-        self.sr = 22050  # 采样率
+        self.sr = 16000  # 降低采样率以提高速度  # 采样率
         self.hop_length = 512  # 帧移
 
     def detect(self, audio_path: str) -> dict:

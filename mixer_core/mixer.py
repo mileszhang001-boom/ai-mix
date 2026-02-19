@@ -20,7 +20,7 @@ class Mixer:
     """混音引擎"""
 
     def __init__(self):
-        self.sr = 22050
+        self.sr = 16000  # 降低采样率以提高速度
         self.track_analyzer = TrackAnalyzer(self.sr)
         self.compatibility_evaluator = CompatibilityEvaluator(self.sr)
 
