@@ -201,7 +201,19 @@ def evaluate():
 
 # 启动
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
+    print("=" * 50)
+    print("环境变量检查：")
+    print(f"PORT: {os.environ.get('PORT', 'NOT SET')}")
+    print(f"UPLOAD_FOLDER: {os.environ.get('UPLOAD_FOLDER', 'NOT SET')}")
+
+    port_str = os.environ.get("PORT")
+    if port_str:
+        port = int(port_str)
+        print(f"使用环境变量 PORT: {port}")
+    else:
+        port = 5000
+        print(f"使用默认端口: {port}")
+
     print(f"启动服务器在端口: {port}")
     print("=" * 50)
     app.run(host="0.0.0.0", port=port, debug=False, threaded=True)
