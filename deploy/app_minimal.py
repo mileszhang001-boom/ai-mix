@@ -138,6 +138,8 @@ def get_output(filename):
 def evaluate():
     import uuid
 
+    print(">>> 收到 /api/evaluate 请求")
+
     try:
         if "track_a" not in request.files or "track_b" not in request.files:
             return jsonify({"error": "Missing files"}), 400
