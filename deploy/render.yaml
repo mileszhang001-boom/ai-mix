@@ -4,7 +4,7 @@ services:
     region: oregon
     runtime: python
     buildCommand: pip install -r deploy/requirements.txt && pip install -e .
-    startCommand: nohup python deploy/app_minimal.py > /tmp/app.log 2>&1 &
+    startCommand: python3 deploy/app_minimal.py
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.6
