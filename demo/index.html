@@ -9,154 +9,215 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
             color: #fff;
             height: 100vh;
             overflow: hidden;
-            padding: 20px;
+            padding: 24px;
+            position: relative;
         }
         
-        /* 主容器 - 三栏布局 */
+        /* 动态背景 */
+        .bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.5;
+            animation: float 20s ease-in-out infinite;
+        }
+        
+        .bg-orb:nth-child(1) {
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+        
+        .bg-orb:nth-child(2) {
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            bottom: -50px;
+            right: -50px;
+            animation-delay: -5s;
+        }
+        
+        .bg-orb:nth-child(3) {
+            width: 250px;
+            height: 250px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -10s;
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            25% {
+                transform: translate(30px, -30px) scale(1.1);
+            }
+            50% {
+                transform: translate(-20px, 20px) scale(0.95);
+            }
+            75% {
+                transform: translate(20px, 10px) scale(1.05);
+            }
+        }
+        
+        /* 半透明遮罩 */
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 15, 26, 0.85);
+            z-index: -1;
+        }
+        
+        /* 主容器 */
         .main-container {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 20px;
+            gap: 24px;
             height: 100%;
-            max-width: 1800px;
+            max-width: 1600px;
             margin: 0 auto;
         }
         
-        /* 通用卡片样式 */
+        /* 卡片样式 */
         .card {
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 16px;
-            padding: 20px;
+            background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 24px;
             display: flex;
             flex-direction: column;
             height: 100%;
-            overflow-y: auto;
         }
         
         .card-header {
-            font-size: 0.85rem;
-            color: #666;
-            margin-bottom: 16px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 20px;
             font-weight: 600;
-            padding-bottom: 12px;
+            padding-bottom: 16px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         
-        /* ===== 左侧：歌曲导入 ===== */
+        /* ===== 左侧：上传区域 ===== */
         .upload-section {
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 20px;
+        }
+        
+        .upload-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
         
         .upload-label {
-            font-size: 0.7rem;
-            color: #555;
-            margin-bottom: 4px;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.5);
+            font-weight: 500;
         }
         
         .upload-item {
-            background: rgba(0,0,0,0.3);
+            height: 100px;
+            background: rgba(0,0,0,0.2);
             border: 2px dashed rgba(255,255,255,0.2);
             border-radius: 12px;
-            padding: 24px 16px;
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            gap: 4px;
+            padding: 16px;
         }
         
         .upload-item:hover {
-            border-color: rgba(0,212,255,0.5);
-            background: rgba(0,212,255,0.05);
+            border-color: rgba(103, 126, 234, 0.6);
+            background: rgba(103, 126, 234, 0.1);
         }
         
-        /* 未上传状态 */
-        .upload-item.empty .upload-icon { 
-            font-size: 2.5rem; 
-            opacity: 0.5;
-            transition: all 0.3s;
+        /* 未上传 */
+        .upload-item.empty .upload-icon {
+            font-size: 1.8rem;
+            opacity: 0.4;
         }
-        .upload-item.empty:hover .upload-icon { 
-            opacity: 0.8;
-            transform: scale(1.1);
-        }
-        .upload-item.empty .upload-name { 
-            color: #666; 
+        
+        .upload-item.empty .upload-name {
+            color: rgba(255,255,255,0.3);
             font-size: 0.8rem;
         }
+        
         .upload-item.empty .upload-hint {
             font-size: 0.65rem;
-            color: #444;
-            margin-top: 8px;
+            color: rgba(255,255,255,0.2);
         }
         
-        /* 已上传状态 */
+        /* 已上传 */
         .upload-item.has-file {
             border-style: solid;
-            border-color: #00d4ff;
-            background: linear-gradient(135deg, rgba(0,212,255,0.1) 0%, rgba(99,102,241,0.1) 100%);
-            padding: 16px;
+            border-color: #667eea;
+            background: rgba(103, 126, 234, 0.15);
         }
         
         .upload-item.has-file .upload-icon {
             font-size: 1.5rem;
-            margin-bottom: 4px;
         }
         
         .upload-item.has-file .upload-name {
-            color: #00d4ff;
+            color: #a5b4fc;
             font-size: 0.85rem;
             font-weight: 500;
-            word-break: break-all;
-        }
-        
-        .upload-item.has-file .upload-status {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            margin-top: 8px;
-            font-size: 0.7rem;
-            color: #4ade80;
-        }
-        
-        .upload-item.has-file .upload-status::before {
-            content: '✓';
-            font-size: 0.8rem;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         
         .upload-item.has-file .upload-hint {
             display: none;
         }
         
-        /* 上传中的加载状态 */
-        .upload-item.loading {
-            border-color: #fbbf24;
-            background: rgba(251,191,36,0.1);
+        .upload-item.has-file .upload-status {
+            display: flex;
+            font-size: 0.7rem;
+            color: #34d399;
         }
         
-        .upload-icon { margin-bottom: 8px; transition: all 0.3s; }
-        .upload-name { word-break: break-all; transition: all 0.3s; }
-        .upload-hint { transition: all 0.3s; }
-        .upload-status { transition: all 0.3s; }
+        .upload-status {
+            display: none;
+        }
         
         .confirm-btn {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #00d4ff 0%, #00b4d8 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
             border-radius: 10px;
-            color: #000;
+            color: #fff;
             font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
@@ -164,48 +225,45 @@
             margin-top: auto;
         }
         
-        .confirm-btn:hover:not(:disabled) { 
+        .confirm-btn:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0,212,255,0.4);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
         }
-        .confirm-btn:disabled { 
-            opacity: 0.3; 
+        
+        .confirm-btn:disabled {
+            opacity: 0.4;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
         }
         
-        /* ===== 中间：策略选择 ===== */
+        /* ===== 中间：策略区域 ===== */
         .strategy-section {
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 20px;
         }
         
-        /* 上方：评估区域 */
+        /* 评估区域 */
         .eval-area {
-            background: rgba(0,0,0,0.3);
-            border-radius: 12px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 14px;
             padding: 20px;
-            border: 1px solid rgba(255,255,255,0.05);
         }
         
         .eval-title {
             font-size: 0.7rem;
-            color: #555;
+            color: rgba(255,255,255,0.5);
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 16px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         
         .eval-placeholder {
             text-align: center;
-            padding: 30px 16px;
-            color: #444;
-            font-size: 0.85rem;
+            padding: 24px 16px;
+            color: rgba(255,255,255,0.3);
         }
         
         .eval-placeholder-icon {
@@ -233,49 +291,66 @@
         }
         
         .eval-score-label {
-            font-size: 0.8rem;
-            color: #666;
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.5);
         }
         
-        .eval-score.high { color: #4ade80; }
-        .eval-score.medium { color: #fbbf24; }
-        .eval-score.low { color: #f87171; }
+        .eval-score.excellent { color: #34d399; }
+        .eval-score.good { color: #60a5fa; }
+        .eval-score.fair { color: #fbbf24; }
+        .eval-score.poor { color: #f87171; }
         
         .eval-verdict {
             font-size: 0.85rem;
             margin-bottom: 12px;
-            padding: 8px 12px;
-            border-radius: 6px;
-            background: rgba(255,255,255,0.03);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
         }
         
-        .eval-verdict.high { color: #4ade80; background: rgba(74,222,128,0.1); }
-        .eval-verdict.medium { color: #fbbf24; background: rgba(251,191,36,0.1); }
-        .eval-verdict.low { color: #f87171; background: rgba(248,113,113,0.1); }
+        .eval-verdict.excellent { 
+            color: #34d399; 
+            background: rgba(52, 211, 153, 0.15);
+        }
+        .eval-verdict.good { 
+            color: #60a5fa; 
+            background: rgba(96, 165, 250, 0.15);
+        }
+        .eval-verdict.fair { 
+            color: #fbbf24; 
+            background: rgba(251, 191, 36, 0.15);
+        }
+        .eval-verdict.poor { 
+            color: #f87171; 
+            background: rgba(248, 113, 113, 0.15);
+        }
         
         .eval-details {
-            font-size: 0.7rem;
-            color: #555;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
             margin-bottom: 12px;
             display: flex;
             justify-content: center;
-            gap: 16px;
+            gap: 20px;
         }
         
-        .eval-details span { color: #888; }
+        .eval-details span { color: rgba(255,255,255,0.7); }
         
         .eval-recommend {
-            font-size: 0.75rem;
-            color: #666;
-            padding: 10px;
-            background: rgba(0,212,255,0.05);
-            border-radius: 6px;
-            border: 1px solid rgba(0,212,255,0.1);
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.6);
+            padding: 10px 14px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(102, 126, 234, 0.2);
         }
         
-        .eval-recommend span { color: #00d4ff; font-weight: 500; }
+        .eval-recommend span { 
+            color: #a5b4fc; 
+            font-weight: 500;
+        }
         
-        /* 下方：策略选择区域 */
+        /* 策略选择区域 */
         .strategy-area {
             flex: 1;
             display: flex;
@@ -284,63 +359,72 @@
         
         .strategy-title {
             font-size: 0.7rem;
-            color: #555;
+            color: rgba(255,255,255,0.5);
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 12px;
         }
         
         .strategy-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
+            flex-direction: column;
             gap: 10px;
             flex: 1;
         }
         
         .strategy-btn {
-            padding: 16px 12px;
-            background: rgba(0,0,0,0.3);
+            padding: 14px 16px;
+            background: rgba(0,0,0,0.2);
             border: 2px solid transparent;
             border-radius: 10px;
             cursor: pointer;
-            text-align: center;
             transition: all 0.2s;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 6px;
+            gap: 12px;
         }
         
-        .strategy-btn:hover {
+        .strategy-btn:hover:not(.disabled) {
             background: rgba(255,255,255,0.05);
-            border-color: rgba(0,212,255,0.3);
+            border-color: rgba(102, 126, 234, 0.3);
         }
         
         .strategy-btn.active {
-            border-color: #00d4ff;
-            background: rgba(0,212,255,0.12);
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.15);
         }
         
         .strategy-btn.disabled {
-            opacity: 0.4;
+            opacity: 0.35;
             cursor: not-allowed;
+        }
+        
+        .strategy-icon {
+            font-size: 1.4rem;
+            width: 36px;
+            text-align: center;
+        }
+        
+        .strategy-info {
+            flex: 1;
         }
         
         .strategy-name {
             font-size: 0.9rem;
             font-weight: 600;
-            color: #fff;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 2px;
         }
         
         .strategy-desc {
-            font-size: 0.65rem;
-            color: #666;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.4);
         }
         
         .gen-btn {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
             border-radius: 10px;
             color: #fff;
@@ -351,25 +435,23 @@
             margin-top: 12px;
         }
         
-        .gen-btn:hover:not(:disabled) { 
-            transform: translateY(-2px); 
-            box-shadow: 0 6px 20px rgba(99,102,241,0.4); 
+        .gen-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
         }
         
-        .gen-btn:disabled { 
-            opacity: 0.4; 
+        .gen-btn:disabled {
+            opacity: 0.4;
             cursor: not-allowed;
-            background: #333;
         }
         
-        /* ===== 右侧：结果和播放 ===== */
+        /* ===== 右侧：结果区域 ===== */
         .result-section {
             flex: 1;
             display: flex;
             flex-direction: column;
         }
         
-        /* 兜底状态 */
         .result-placeholder {
             flex: 1;
             display: flex;
@@ -377,27 +459,26 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 40px 20px;
-            color: #444;
+            padding: 40px 24px;
+            color: rgba(255,255,255,0.3);
         }
         
         .result-placeholder-icon {
             font-size: 3rem;
             margin-bottom: 16px;
-            opacity: 0.3;
+            opacity: 0.4;
         }
         
         .result-placeholder-text {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             margin-bottom: 8px;
         }
         
         .result-placeholder-hint {
-            font-size: 0.75rem;
-            color: #333;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.2);
         }
         
-        /* 结果内容 */
         .result-content {
             display: none;
             flex-direction: column;
@@ -409,51 +490,49 @@
         }
         
         .result-card {
-            background: rgba(0,0,0,0.3);
-            border-radius: 12px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 14px;
             padding: 16px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
         }
         
         .result-header {
             display: flex;
             justify-content: space-between;
-            font-size: 0.75rem;
-            color: #555;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.5);
             margin-bottom: 12px;
             padding-bottom: 12px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         
-        .result-header .highlight { color: #00d4ff; font-weight: 500; }
+        .result-header .highlight { 
+            color: #a5b4fc; 
+            font-weight: 500;
+        }
         
         .result-info {
             font-size: 0.8rem;
-            color: #888;
-            margin-bottom: 12px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 16px;
         }
         
         .wave-container {
-            background: #080810;
-            border-radius: 8px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
             padding: 12px;
-            margin-bottom: 12px;
-            flex: 1;
-            min-height: 100px;
+            margin-bottom: 16px;
         }
         
         .wave-label {
-            font-size: 0.6rem;
-            color: #444;
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.3);
             margin-bottom: 8px;
         }
         
         .wave-canvas {
             width: 100%;
-            height: 80px;
-            border-radius: 4px;
+            height: 60px;
+            border-radius: 6px;
             display: block;
         }
         
@@ -461,67 +540,67 @@
             width: 100%;
             border-radius: 8px;
             background: #000;
-            margin-top: auto;
+            filter: sepia(20%) saturate(70%) grayscale(1) contrast(99%) invert(12%);
+            height: 36px;
         }
         
-        /* 状态指示 */
+        audio::-webkit-media-controls-panel {
+            background: #1a1a2e;
+        }
+        
+        /* 状态提示 */
         .loading, .error {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            padding: 20px 40px;
+            padding: 20px 32px;
             border-radius: 12px;
             font-size: 0.9rem;
             z-index: 1000;
             display: none;
+            backdrop-filter: blur(10px);
         }
         
         .loading {
-            background: rgba(0,0,0,0.9);
-            color: #00d4ff;
-            border: 1px solid rgba(0,212,255,0.3);
+            background: rgba(26, 26, 46, 0.95);
+            color: #a5b4fc;
+            border: 1px solid rgba(102, 126, 234, 0.3);
         }
         
         .error {
-            background: rgba(248,113,113,0.2);
-            color: #f87171;
-            border: 1px solid rgba(248,113,113,0.3);
+            background: rgba(127, 29, 29, 0.9);
+            color: #fca5a5;
+            border: 1px solid rgba(248, 113, 113, 0.3);
             max-width: 300px;
             text-align: center;
         }
         
-        /* 滚动条样式 */
-        .card::-webkit-scrollbar { width: 4px; }
-        .card::-webkit-scrollbar-track { background: transparent; }
-        .card::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
-        
         /* 响应式 */
-        @media (max-width: 1400px) {
+        @media (max-width: 1200px) {
             .main-container {
                 grid-template-columns: 1fr 1fr;
-                max-height: 100vh;
-                overflow-y: auto;
+                gap: 16px;
             }
             
-            body {
-                padding: 12px;
-                overflow: auto;
-            }
-            
-            .card {
-                min-height: 300px;
-                max-height: 50vh;
-            }
+            body { padding: 16px; }
         }
         
-        @media (max-width: 900px) {
+        @media (max-width: 800px) {
             .main-container {
                 grid-template-columns: 1fr;
                 gap: 12px;
+                overflow-y: auto;
             }
             
-            .card {
+            body { 
+                padding: 12px; 
+                overflow: auto;
+                height: auto;
+                min-height: 100vh;
+            }
+            
+            .card { 
                 min-height: auto;
                 max-height: none;
             }
@@ -529,32 +608,40 @@
     </style>
 </head>
 <body>
+    <!-- 动态背景 -->
+    <div class="bg-container">
+        <div class="bg-orb"></div>
+        <div class="bg-orb"></div>
+        <div class="bg-orb"></div>
+    </div>
+    <div class="bg-overlay"></div>
+    
     <div class="main-container">
         
-        <!-- 左侧：歌曲导入 -->
+        <!-- 左侧：上传 -->
         <div class="card">
             <div class="card-header">导入歌曲</div>
             <div class="upload-section">
                 
-                <div>
+                <div class="upload-group">
                     <label class="upload-label">歌曲 A（前一首）</label>
                     <div class="upload-item empty" id="uploadA" onclick="document.getElementById('fileA').click()">
                         <input type="file" id="fileA" accept="audio/*" style="display: none;">
                         <div class="upload-icon">🎵</div>
                         <div class="upload-name" id="nameA">点击选择歌曲</div>
-                        <div class="upload-hint">支持 MP3、WAV、M4A 格式</div>
-                        <div class="upload-status" id="statusA">已就绪</div>
+                        <div class="upload-hint">支持 MP3 / WAV / M4A</div>
+                        <div class="upload-status">✓ 已就绪</div>
                     </div>
                 </div>
                 
-                <div>
+                <div class="upload-group">
                     <label class="upload-label">歌曲 B（后一首）</label>
                     <div class="upload-item empty" id="uploadB" onclick="document.getElementById('fileB').click()">
                         <input type="file" id="fileB" accept="audio/*" style="display: none;">
                         <div class="upload-icon">🎵</div>
                         <div class="upload-name" id="nameB">点击选择歌曲</div>
-                        <div class="upload-hint">支持 MP3、WAV、M4A 格式</div>
-                        <div class="upload-status" id="statusB">已就绪</div>
+                        <div class="upload-hint">支持 MP3 / WAV / M4A</div>
+                        <div class="upload-status">✓ 已就绪</div>
                     </div>
                 </div>
                 
@@ -562,22 +649,20 @@
             </div>
         </div>
         
-        <!-- 中间：策略选择 -->
+        <!-- 中间：策略 -->
         <div class="card">
             <div class="card-header">混音策略</div>
             
             <div class="strategy-section">
-                <!-- 上方：评估区域 -->
+                <!-- 评估 -->
                 <div class="eval-area">
                     <div class="eval-title">兼容性评估</div>
                     
-                    <!-- 兜底状态 -->
                     <div class="eval-placeholder" id="evalPlaceholder">
                         <div class="eval-placeholder-icon">📊</div>
                         <div>请先上传两首歌曲</div>
                     </div>
                     
-                    <!-- 评估结果 -->
                     <div class="eval-result" id="evalResult" style="display: none;">
                         <div class="eval-score-wrapper">
                             <div class="eval-score" id="evalScore">-</div>
@@ -595,25 +680,37 @@
                     </div>
                 </div>
                 
-                <!-- 下方：策略选择区域 -->
+                <!-- 策略选择 -->
                 <div class="strategy-area">
-                    <div class="strategy-title">选择混音策略</div>
+                    <div class="strategy-title">选择策略</div>
                     <div class="strategy-grid">
                         <div class="strategy-btn disabled" data-strategy="crossfade" onclick="selectStrategy('crossfade')">
-                            <div class="strategy-name">Crossfade</div>
-                            <div class="strategy-desc">淡入淡出过渡</div>
+                            <div class="strategy-icon">🌊</div>
+                            <div class="strategy-info">
+                                <div class="strategy-name">Crossfade</div>
+                                <div class="strategy-desc">简单淡入淡出，稳定可靠适合大多数场景</div>
+                            </div>
                         </div>
                         <div class="strategy-btn disabled" data-strategy="beat_sync" onclick="selectStrategy('beat_sync')">
-                            <div class="strategy-name">Beat-sync</div>
-                            <div class="strategy-desc">节拍对齐过渡</div>
+                            <div class="strategy-icon">🥁</div>
+                            <div class="strategy-info">
+                                <div class="strategy-name">Beat-sync</div>
+                                <div class="strategy-desc">节拍对齐，BPM接近时过渡最丝滑</div>
+                            </div>
                         </div>
                         <div class="strategy-btn disabled" data-strategy="echo_fade" onclick="selectStrategy('echo_fade')">
-                            <div class="strategy-name">Echo</div>
-                            <div class="strategy-desc">回声效果过渡</div>
+                            <div class="strategy-icon">🔊</div>
+                            <div class="strategy-info">
+                                <div class="strategy-name">Echo</div>
+                                <div class="strategy-desc">回声效果，用残响掩盖过渡的不完美</div>
+                            </div>
                         </div>
                         <div class="strategy-btn disabled" data-strategy="harmonic" onclick="selectStrategy('harmonic')">
-                            <div class="strategy-name">Harmonic</div>
-                            <div class="strategy-desc">调性匹配过渡</div>
+                            <div class="strategy-icon">🎹</div>
+                            <div class="strategy-info">
+                                <div class="strategy-name">Harmonic</div>
+                                <div class="strategy-desc">调性匹配，和声和谐时效果最佳</div>
+                            </div>
                         </div>
                     </div>
                     <button class="gen-btn" id="genBtn" onclick="generateMix()" disabled>生成混音</button>
@@ -621,35 +718,30 @@
             </div>
         </div>
         
-        <!-- 右侧：结果和播放 -->
+        <!-- 右侧：结果 -->
         <div class="card">
             <div class="card-header">混音结果</div>
             
             <div class="result-section">
-                <!-- 兜底状态 -->
                 <div class="result-placeholder" id="resultPlaceholder">
                     <div class="result-placeholder-icon">🎧</div>
                     <div class="result-placeholder-text">暂未生成混音效果</div>
                     <div class="result-placeholder-hint">请先上传歌曲并选择策略</div>
                 </div>
                 
-                <!-- 结果内容 -->
                 <div class="result-content" id="resultContent">
                     <div class="result-card">
                         <div class="result-header">
                             <div>策略: <span class="highlight" id="resStrategy">-</span></div>
                             <div>时长: <span class="highlight" id="resDuration">-</span></div>
                         </div>
-                        
                         <div class="result-info">
                             过渡点: <span id="resTransition">-</span> 秒
                         </div>
-                        
                         <div class="wave-container">
-                            <div class="wave-label">混音波形（红→蓝 表示过渡）</div>
+                            <div class="wave-label">波形预览（红色为过渡区域）</div>
                             <canvas id="waveMix"></canvas>
                         </div>
-                        
                         <audio id="player" controls class="audio-player"></audio>
                     </div>
                 </div>
@@ -662,18 +754,15 @@
     
     <script>
         const API_BASE = '';
-        
         let fileA = null, fileB = null;
         let currentStrategy = 'crossfade';
-        let audioContext = null;
         
-        // 文件选择
         document.getElementById('fileA').addEventListener('change', e => {
             if (e.target.files[0]) {
                 fileA = e.target.files[0];
-                const uploadEl = document.getElementById('uploadA');
-                uploadEl.classList.remove('empty');
-                uploadEl.classList.add('has-file');
+                const el = document.getElementById('uploadA');
+                el.classList.remove('empty');
+                el.classList.add('has-file');
                 document.getElementById('nameA').textContent = fileA.name;
                 checkCanConfirm();
             }
@@ -682,9 +771,9 @@
         document.getElementById('fileB').addEventListener('change', e => {
             if (e.target.files[0]) {
                 fileB = e.target.files[0];
-                const uploadEl = document.getElementById('uploadB');
-                uploadEl.classList.remove('empty');
-                uploadEl.classList.add('has-file');
+                const el = document.getElementById('uploadB');
+                el.classList.remove('empty');
+                el.classList.add('has-file');
                 document.getElementById('nameB').textContent = fileB.name;
                 checkCanConfirm();
             }
@@ -697,11 +786,10 @@
             const sizeB = fileB ? fileB.size : 0;
             
             if ((nameA === nameB && nameA !== '') || (sizeA === sizeB && sizeA > 0)) {
-                showError('⚠️ 检测到相同的歌曲，请选择不同的两首曲目');
+                showError('⚠️ 检测到相同的歌曲，请选择不同的两首');
                 document.getElementById('confirmBtn').disabled = true;
                 return;
             }
-            
             hideError();
             document.getElementById('confirmBtn').disabled = !(fileA && fileB);
         }
@@ -715,7 +803,6 @@
             document.getElementById('error').style.display = 'none';
         }
         
-        // 确认选择 - 评估
         async function confirmSelection() {
             document.getElementById('loading').style.display = 'block';
             document.getElementById('confirmBtn').disabled = true;
@@ -730,46 +817,46 @@
                 const data = await res.json();
                 
                 if (data.success) {
-                    // 隐藏兜底，显示结果
                     document.getElementById('evalPlaceholder').style.display = 'none';
                     document.getElementById('evalResult').style.display = 'block';
                     
-                    // 更新评分
                     const score = data.score;
                     const scoreEl = document.getElementById('evalScore');
                     scoreEl.textContent = score;
-                    scoreEl.className = 'eval-score ' + (score >= 70 ? 'high' : score >= 50 ? 'medium' : 'low');
                     
-                    // 更新评价
                     const verdictEl = document.getElementById('evalVerdict');
-                    if (score >= 70) {
-                        verdictEl.textContent = '非常适合混音';
-                        verdictEl.className = 'eval-verdict high';
-                    } else if (score >= 50) {
-                        verdictEl.textContent = '可以尝试混音';
-                        verdictEl.className = 'eval-verdict medium';
+                    // 新的评分标准
+                    if (score >= 90) {
+                        scoreEl.className = 'eval-score excellent';
+                        verdictEl.textContent = '优秀 - 非常适合混音';
+                        verdictEl.className = 'eval-verdict excellent';
+                    } else if (score >= 75) {
+                        scoreEl.className = 'eval-score good';
+                        verdictEl.textContent = '良好 - 适合尝试混音';
+                        verdictEl.className = 'eval-verdict good';
+                    } else if (score >= 60) {
+                        scoreEl.className = 'eval-score fair';
+                        verdictEl.textContent = '一般 - 混音效果可能平平';
+                        verdictEl.className = 'eval-verdict fair';
                     } else {
-                        verdictEl.textContent = '混音效果可能不佳';
-                        verdictEl.className = 'eval-verdict low';
+                        scoreEl.className = 'eval-score poor';
+                        verdictEl.textContent = '较差 - 建议更换歌曲';
+                        verdictEl.className = 'eval-verdict poor';
                     }
                     
-                    // 更新详情
                     document.getElementById('evalDetails').innerHTML = 
                         '<span>BPM: ' + (data.bpm_score || '-') + '</span>' +
                         '<span>调性: ' + (data.key_score || '-') + '</span>' +
                         '<span>节奏: ' + (data.beat_score || '-') + '</span>';
                     
-                    // 更新推荐
                     document.getElementById('evalRecommend').innerHTML = 
                         '推荐策略: <span>' + (data.recommendation_name || data.recommendation) + '</span>';
                     
-                    // 启用策略选择
                     document.querySelectorAll('.strategy-btn').forEach(btn => {
                         btn.classList.remove('disabled');
                     });
                     document.getElementById('genBtn').disabled = false;
                     
-                    // 自动选择推荐策略
                     window.recommendedStrategy = data.recommendation;
                     selectStrategy(data.recommendation);
                 }
@@ -783,7 +870,6 @@
         }
         
         function selectStrategy(strategy) {
-            // 检查是否可用
             const btn = document.querySelector(`[data-strategy="${strategy}"]`);
             if (btn.classList.contains('disabled')) return;
             
@@ -807,16 +893,23 @@
                 const data = await res.json();
                 
                 if (data.success) {
-                    const names = { crossfade: 'Crossfade', beat_sync: 'Beat-sync', echo_fade: 'Echo', harmonic: 'Harmonic' };
+                    const names = { 
+                        crossfade: 'Crossfade', 
+                        beat_sync: 'Beat-sync', 
+                        echo_fade: 'Echo', 
+                        harmonic: 'Harmonic' 
+                    };
                     
                     document.getElementById('resStrategy').textContent = names[data.strategy] || data.strategy;
                     document.getElementById('resDuration').textContent = fmtTime(data.duration);
                     document.getElementById('resTransition').textContent = fmtTime(data.transition_point);
                     
-                    const outputUrl = data.output_url.startsWith('http') ? data.output_url : (API_BASE + data.output_url);
+                    const outputUrl = data.output_url.startsWith('http') 
+                        ? data.output_url 
+                        : (API_BASE + data.output_url);
+                    
                     await drawWave(outputUrl, data.transition_point, data.duration);
                     
-                    // 显示结果
                     document.getElementById('resultPlaceholder').style.display = 'none';
                     document.getElementById('resultContent').classList.add('show');
                     document.getElementById('player').src = outputUrl;
@@ -841,9 +934,8 @@
             const canvas = document.getElementById('waveMix');
             const ctx = canvas.getContext('2d');
             
-            // 设置 canvas 实际尺寸
             canvas.width = canvas.offsetWidth * 2;
-            canvas.height = canvas.offsetHeight * 2;
+            canvas.height = 120;
             
             const resp = await fetch(url);
             const ab = await resp.arrayBuffer();
@@ -856,7 +948,8 @@
             ctx.fillStyle = '#0a0a14';
             ctx.fillRect(0, 0, w, h);
             
-            // 绘制波形
+            const transX = (transition / duration) * w;
+            
             for (let i = 0; i < w; i++) {
                 let min = 1, max = -1;
                 for (let j = 0; j < step; j++) {
@@ -867,14 +960,7 @@
                     if (d > max) max = d;
                 }
                 
-                // 根据位置决定颜色
-                const transX = (transition / duration) * w;
-                if (i < transX) {
-                    ctx.fillStyle = '#f87171';
-                } else {
-                    ctx.fillStyle = '#00d4ff';
-                }
-                
+                ctx.fillStyle = i < transX ? '#f87171' : '#60a5fa';
                 ctx.fillRect(i, (1 + min) * h/2, 1, Math.max(1, (max - min) * h/2));
             }
         }
