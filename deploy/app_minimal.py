@@ -183,7 +183,16 @@ def evaluate():
             {
                 "success": True,
                 "score": result["score"],
+                "bpm_score": result.get("bpm_score", 0),
+                "key_score": result.get("key_score", 0),
+                "beat_score": result.get("beat_score", 0),
                 "recommendation": result["recommendation"],
+                "recommendation_name": {
+                    "crossfade": "Crossfade",
+                    "beat_sync": "Beat-sync",
+                    "echo_fade": "Echo",
+                    "harmonic": "Harmonic",
+                }.get(result["recommendation"], result["recommendation"]),
                 "reason": result["reason"],
                 "bpm_a": result["bpm_a"],
                 "bpm_b": result["bpm_b"],
@@ -207,16 +216,14 @@ if __name__ == "__main__":
     print(f"PORT 环境变量: {os.environ.get('PORT', 'NOT SET')}")
     print(f"环境变量数量: {len(os.environ)}")
 
-    # 强制要求 PORT 环境变量
     port_str = os.environ.get("PORT")
-    if not port_str:
-        print("✗ 错误: PORT 环境变量未设置！")
-        print("   Render 必须自动设置 PORT 环境变量")
-        print("   如果没有设置，请检查 Render 配置")
-        sys.exit(1)
+    if port_str:
+        port = int(port_str)
+        print(f"✓ PORT: {port} (来自环境变量)")
+    else:
+        port = 5000
+        print(f"⚠ PORT 未设置，使用默认端口 {port}")
 
-    port = int(port_str)
-    print(f"✓ PORT: {port}")
     print(f"✓ 启动服务器在端口 {port}")
     print("=" * 50)
 

@@ -186,13 +186,12 @@ class HarmonicMixStrategy(CrossfadeStrategy):
         audio_b: np.ndarray,
         sr: int,
         transition_point: int,
-        key_a: str = None,
-        key_b: str = None,
         beats_a=None,
         beats_b=None,
         transition_point_b: float = 0,
+        key_a: str = None,
+        key_b: str = None,
     ) -> np.ndarray:
-        # 如果没有传入调性信息，使用基础 crossfade
         if not key_a or not key_b:
             logger.warning("未提供调性信息，使用基础 Crossfade")
             return super().apply(
@@ -205,20 +204,17 @@ class HarmonicMixStrategy(CrossfadeStrategy):
                 transition_point_b=transition_point_b,
             )
 
-        # 计算调性距离
-        distance = calculate_harmonic_distance(key_a, key_b)
+        key_a_num = CIRCLE_OF_FIFTHS.get(key_a.replace("#", "").replace("b", ""), 0)
+        key_b_num = CIRCLE_OF_FIFTHS.get(key_b.replace("#", "").replace("b", ""), 0)
+        distance = calculate_harmonic_distance(key_a_num, key_b_num)
 
-        # 根据和谐度调整过渡参数
-        if is_harmonic_compatible(key_a, key_b):
+        if is_harmonic_compatible(key_a_num, key_b_num):
             logger.info(f"调性和谐 (距离: {distance})，使用深度重叠")
-            # 和谐时：更长的过渡时间，更平滑
             adjusted_duration = self._fade_duration * 1.5
         else:
             logger.info(f"调性不和谐 (距离: {distance})，缩短过渡")
-            # 不和谐时：更短的过渡时间，避免冲突
             adjusted_duration = self._fade_duration * 0.5
 
-        # 创建调整后的策略
         adjusted_strategy = CrossfadeStrategy(
             fade_duration=adjusted_duration,
             curve_type=self._curve_type,
@@ -226,4 +222,12 @@ class HarmonicMixStrategy(CrossfadeStrategy):
             skip_silence=self._skip_silence,
         )
 
-        return adjusted_strategy.apply(audio_a, audio_b, sr, transition_point, beats_a, beats_b)
+        return adjusted_strategy.apply(
+            audio_a,
+            audio_b,
+            sr,
+            transition_point,
+            beats_a=beats_a,
+            beats_b=beats_b,
+            transition_point_b=transition_point_b,
+        )

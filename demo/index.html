@@ -9,6 +9,7 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f0f1a;
             color: #fff;
             height: 100vh;
             overflow: hidden;
@@ -23,74 +24,62 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -1;
+            z-index: 0;
             overflow: hidden;
+            pointer-events: none;
         }
         
         .bg-orb {
             position: absolute;
             border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.5;
-            animation: float 20s ease-in-out infinite;
+            filter: blur(100px);
+            opacity: 0.35;
+            animation: float 25s ease-in-out infinite;
         }
         
         .bg-orb:nth-child(1) {
-            width: 400px;
-            height: 400px;
+            width: 500px;
+            height: 500px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            top: -100px;
-            left: -100px;
+            top: -150px;
+            left: -150px;
             animation-delay: 0s;
         }
         
         .bg-orb:nth-child(2) {
-            width: 300px;
-            height: 300px;
+            width: 400px;
+            height: 400px;
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            bottom: -50px;
-            right: -50px;
-            animation-delay: -5s;
+            bottom: -100px;
+            right: -100px;
+            animation-delay: -8s;
         }
         
         .bg-orb:nth-child(3) {
-            width: 250px;
-            height: 250px;
+            width: 350px;
+            height: 350px;
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            animation-delay: -10s;
+            top: 40%;
+            left: 60%;
+            animation-delay: -16s;
         }
         
         @keyframes float {
             0%, 100% {
                 transform: translate(0, 0) scale(1);
             }
-            25% {
-                transform: translate(30px, -30px) scale(1.1);
+            33% {
+                transform: translate(40px, -40px) scale(1.1);
             }
-            50% {
-                transform: translate(-20px, 20px) scale(0.95);
+            66% {
+                transform: translate(-30px, 30px) scale(0.9);
             }
-            75% {
-                transform: translate(20px, 10px) scale(1.05);
-            }
-        }
-        
-        /* 半透明遮罩 */
-        .bg-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(15, 15, 26, 0.85);
-            z-index: -1;
         }
         
         /* 主容器 */
         .main-container {
+            position: relative;
+            z-index: 1;
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
             gap: 24px;
@@ -101,9 +90,8 @@
         
         /* 卡片样式 */
         .card {
-            background: rgba(255,255,255,0.06);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(30, 30, 50, 0.6);
+            border: 1px solid rgba(255,255,255,0.08);
             border-radius: 20px;
             padding: 24px;
             display: flex;
@@ -113,11 +101,11 @@
         
         .card-header {
             font-size: 0.9rem;
-            color: rgba(255,255,255,0.9);
+            color: #fff;
             margin-bottom: 20px;
             font-weight: 600;
             padding-bottom: 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
         }
         
         /* ===== 左侧：上传区域 ===== */
@@ -136,13 +124,13 @@
         
         .upload-label {
             font-size: 0.75rem;
-            color: rgba(255,255,255,0.5);
+            color: rgba(255,255,255,0.6);
             font-weight: 500;
         }
         
         .upload-item {
-            height: 100px;
-            background: rgba(0,0,0,0.2);
+            height: 140px;
+            background: rgba(0,0,0,0.25);
             border: 2px dashed rgba(255,255,255,0.2);
             border-radius: 12px;
             display: flex;
@@ -151,36 +139,36 @@
             justify-content: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            gap: 4px;
+            gap: 6px;
             padding: 16px;
         }
         
         .upload-item:hover {
-            border-color: rgba(103, 126, 234, 0.6);
-            background: rgba(103, 126, 234, 0.1);
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
         }
         
         /* 未上传 */
         .upload-item.empty .upload-icon {
             font-size: 1.8rem;
-            opacity: 0.4;
+            opacity: 0.5;
         }
         
         .upload-item.empty .upload-name {
-            color: rgba(255,255,255,0.3);
+            color: rgba(255,255,255,0.4);
             font-size: 0.8rem;
         }
         
         .upload-item.empty .upload-hint {
             font-size: 0.65rem;
-            color: rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.25);
         }
         
         /* 已上传 */
         .upload-item.has-file {
             border-style: solid;
             border-color: #667eea;
-            background: rgba(103, 126, 234, 0.15);
+            background: rgba(102, 126, 234, 0.12);
         }
         
         .upload-item.has-file .upload-icon {
@@ -250,30 +238,29 @@
             background: rgba(0,0,0,0.2);
             border-radius: 14px;
             padding: 20px;
+            min-height: 180px;
         }
         
-        .eval-title {
-            font-size: 0.7rem;
-            color: rgba(255,255,255,0.5);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 16px;
+        .eval-content {
+            position: relative;
+            min-height: 140px;
         }
         
         .eval-placeholder {
             text-align: center;
-            padding: 24px 16px;
-            color: rgba(255,255,255,0.3);
+            padding: 40px 16px;
+            color: rgba(255,255,255,0.4);
         }
         
         .eval-placeholder-icon {
             font-size: 2rem;
             margin-bottom: 12px;
-            opacity: 0.5;
+            opacity: 0.6;
         }
         
         .eval-result {
             text-align: center;
+            padding: 0;
         }
         
         .eval-score-wrapper {
@@ -310,24 +297,24 @@
         
         .eval-verdict.excellent { 
             color: #34d399; 
-            background: rgba(52, 211, 153, 0.15);
+            background: rgba(52, 211, 153, 0.12);
         }
         .eval-verdict.good { 
             color: #60a5fa; 
-            background: rgba(96, 165, 250, 0.15);
+            background: rgba(96, 165, 250, 0.12);
         }
         .eval-verdict.fair { 
             color: #fbbf24; 
-            background: rgba(251, 191, 36, 0.15);
+            background: rgba(251, 191, 36, 0.12);
         }
         .eval-verdict.poor { 
             color: #f87171; 
-            background: rgba(248, 113, 113, 0.15);
+            background: rgba(248, 113, 113, 0.12);
         }
         
         .eval-details {
             font-size: 0.75rem;
-            color: rgba(255,255,255,0.4);
+            color: rgba(255,255,255,0.45);
             margin-bottom: 12px;
             display: flex;
             justify-content: center;
@@ -340,9 +327,9 @@
             font-size: 0.8rem;
             color: rgba(255,255,255,0.6);
             padding: 10px 14px;
-            background: rgba(102, 126, 234, 0.1);
+            background: rgba(102, 126, 234, 0.08);
             border-radius: 8px;
-            border: 1px solid rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.15);
         }
         
         .eval-recommend span { 
@@ -385,13 +372,13 @@
         }
         
         .strategy-btn:hover:not(.disabled) {
-            background: rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.04);
             border-color: rgba(102, 126, 234, 0.3);
         }
         
         .strategy-btn.active {
             border-color: #667eea;
-            background: rgba(102, 126, 234, 0.15);
+            background: rgba(102, 126, 234, 0.12);
         }
         
         .strategy-btn.disabled {
@@ -412,13 +399,13 @@
         .strategy-name {
             font-size: 0.9rem;
             font-weight: 600;
-            color: rgba(255,255,255,0.9);
+            color: #fff;
             margin-bottom: 2px;
         }
         
         .strategy-desc {
             font-size: 0.7rem;
-            color: rgba(255,255,255,0.4);
+            color: rgba(255,255,255,0.45);
         }
         
         .gen-btn {
@@ -460,13 +447,13 @@
             justify-content: center;
             text-align: center;
             padding: 40px 24px;
-            color: rgba(255,255,255,0.3);
+            color: rgba(255,255,255,0.4);
         }
         
         .result-placeholder-icon {
             font-size: 3rem;
             margin-bottom: 16px;
-            opacity: 0.4;
+            opacity: 0.5;
         }
         
         .result-placeholder-text {
@@ -476,7 +463,7 @@
         
         .result-placeholder-hint {
             font-size: 0.8rem;
-            color: rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.3);
         }
         
         .result-content {
@@ -502,7 +489,7 @@
             color: rgba(255,255,255,0.5);
             margin-bottom: 12px;
             padding-bottom: 12px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
         }
         
         .result-header .highlight { 
@@ -517,7 +504,7 @@
         }
         
         .wave-container {
-            background: rgba(0,0,0,0.3);
+            background: rgba(0,0,0,0.25);
             border-radius: 10px;
             padding: 12px;
             margin-bottom: 16px;
@@ -525,11 +512,11 @@
         
         .wave-label {
             font-size: 0.65rem;
-            color: rgba(255,255,255,0.3);
+            color: rgba(255,255,255,0.4);
             margin-bottom: 8px;
         }
         
-        .wave-canvas {
+        #waveMix {
             width: 100%;
             height: 60px;
             border-radius: 6px;
@@ -539,13 +526,8 @@
         .audio-player {
             width: 100%;
             border-radius: 8px;
-            background: #000;
-            filter: sepia(20%) saturate(70%) grayscale(1) contrast(99%) invert(12%);
-            height: 36px;
-        }
-        
-        audio::-webkit-media-controls-panel {
-            background: #1a1a2e;
+            background: rgba(0,0,0,0.3);
+            height: 40px;
         }
         
         /* 状态提示 */
@@ -559,17 +541,16 @@
             font-size: 0.9rem;
             z-index: 1000;
             display: none;
-            backdrop-filter: blur(10px);
         }
         
         .loading {
-            background: rgba(26, 26, 46, 0.95);
+            background: rgba(30, 30, 50, 0.95);
             color: #a5b4fc;
             border: 1px solid rgba(102, 126, 234, 0.3);
         }
         
         .error {
-            background: rgba(127, 29, 29, 0.9);
+            background: rgba(127, 29, 29, 0.95);
             color: #fca5a5;
             border: 1px solid rgba(248, 113, 113, 0.3);
             max-width: 300px;
@@ -582,7 +563,6 @@
                 grid-template-columns: 1fr 1fr;
                 gap: 16px;
             }
-            
             body { padding: 16px; }
         }
         
@@ -592,14 +572,12 @@
                 gap: 12px;
                 overflow-y: auto;
             }
-            
             body { 
                 padding: 12px; 
                 overflow: auto;
                 height: auto;
                 min-height: 100vh;
             }
-            
             .card { 
                 min-height: auto;
                 max-height: none;
@@ -614,7 +592,6 @@
         <div class="bg-orb"></div>
         <div class="bg-orb"></div>
     </div>
-    <div class="bg-overlay"></div>
     
     <div class="main-container">
         
@@ -825,7 +802,6 @@
                     scoreEl.textContent = score;
                     
                     const verdictEl = document.getElementById('evalVerdict');
-                    // 新的评分标准
                     if (score >= 90) {
                         scoreEl.className = 'eval-score excellent';
                         verdictEl.textContent = '优秀 - 非常适合混音';
@@ -934,8 +910,12 @@
             const canvas = document.getElementById('waveMix');
             const ctx = canvas.getContext('2d');
             
-            canvas.width = canvas.offsetWidth * 2;
+            const container = canvas.parentElement;
+            const containerWidth = container.clientWidth - 24;
+            canvas.width = containerWidth * 2;
             canvas.height = 120;
+            canvas.style.width = containerWidth + 'px';
+            canvas.style.height = '60px';
             
             const resp = await fetch(url);
             const ab = await resp.arrayBuffer();
@@ -943,26 +923,73 @@
             
             const w = canvas.width;
             const h = canvas.height;
-            const step = Math.floor(audioData.length / w);
+            const channelData = audioData.getChannelData(0);
+            const samplesPerPixel = Math.max(1, Math.floor(channelData.length / w));
+            
+            const transX = Math.floor((transition / duration) * w);
+            const fadeWidth = Math.floor(w * 0.12);
+            const fadeStart = Math.max(0, transX - fadeWidth / 2);
+            const fadeEnd = Math.min(w, transX + fadeWidth / 2);
             
             ctx.fillStyle = '#0a0a14';
             ctx.fillRect(0, 0, w, h);
             
-            const transX = (transition / duration) * w;
+            function lerpColor(c1, c2, t) {
+                const r = Math.round(c1[0] + (c2[0] - c1[0]) * t);
+                const g = Math.round(c1[1] + (c2[1] - c1[1]) * t);
+                const b = Math.round(c1[2] + (c2[2] - c1[2]) * t);
+                return `rgb(${r},${g},${b})`;
+            }
             
+            const colorA = [248, 113, 113];
+            const colorMix = [192, 132, 252];
+            const colorB = [96, 165, 250];
+            
+            const waveData = [];
             for (let i = 0; i < w; i++) {
                 let min = 1, max = -1;
-                for (let j = 0; j < step; j++) {
-                    const idx = i * step + j;
-                    if (idx >= audioData.length) break;
-                    const d = audioData[idx];
+                const startIdx = i * samplesPerPixel;
+                for (let j = 0; j < samplesPerPixel && startIdx + j < channelData.length; j++) {
+                    const d = channelData[startIdx + j];
                     if (d < min) min = d;
                     if (d > max) max = d;
                 }
-                
-                ctx.fillStyle = i < transX ? '#f87171' : '#60a5fa';
-                ctx.fillRect(i, (1 + min) * h/2, 1, Math.max(1, (max - min) * h/2));
+                waveData.push({ min, max, mid: (min + max) / 2, range: max - min });
             }
+            
+            for (let i = 0; i < w; i++) {
+                const { min, max, range } = waveData[i];
+                const barHeight = Math.max(1, range * h / 2);
+                const y = (1 + min) * h / 2;
+                
+                let color;
+                if (i < fadeStart) {
+                    color = lerpColor(colorA, [248, 180, 113], i / fadeStart * 0.3);
+                } else if (i < fadeEnd) {
+                    const t = (i - fadeStart) / (fadeEnd - fadeStart);
+                    if (t < 0.5) {
+                        color = lerpColor(colorA, colorMix, t * 2);
+                    } else {
+                        color = lerpColor(colorMix, colorB, (t - 0.5) * 2);
+                    }
+                } else {
+                    const progress = (i - fadeEnd) / (w - fadeEnd);
+                    color = lerpColor(colorB, [56, 189, 248], progress * 0.3);
+                }
+                
+                ctx.fillStyle = color;
+                ctx.fillRect(i, y, 1, barHeight);
+                
+                ctx.fillStyle = color.replace('rgb', 'rgba').replace(')', ',0.15)');
+                ctx.fillRect(i, h / 2 - 2, 1, 4);
+            }
+            
+            const glowGrad = ctx.createLinearGradient(fadeStart, 0, fadeEnd, 0);
+            glowGrad.addColorStop(0, 'rgba(192, 132, 252, 0)');
+            glowGrad.addColorStop(0.5, 'rgba(192, 132, 252, 0.2)');
+            glowGrad.addColorStop(1, 'rgba(192, 132, 252, 0)');
+            ctx.fillStyle = glowGrad;
+            ctx.fillRect(fadeStart, 0, fadeEnd - fadeStart, h);
         }
     </script>
 </body>

@@ -66,30 +66,32 @@ def recommend_strategy(
 ) -> tuple[str, str]:
     """基于综合评分和各维度评分推荐策略"""
 
-    # 计算实际 BPM 差异率
     bpm_diff_ratio = abs(bpm_a - bpm_b) / max(bpm_a, bpm_b) if bpm_a > 0 and bpm_b > 0 else 1.0
 
-    # 规则1: BPM差异太大，不适合beat_sync
-    if bpm_diff_ratio > 0.20:
-        if score >= 50:
-            return "crossfade", "BPM差异较大，使用简单过渡"
+    if key_score >= 70:
+        if bpm_diff_ratio <= 0.15:
+            return "beat_sync", "调性匹配且BPM接近，节拍对齐最佳"
+        elif bpm_diff_ratio <= 0.25:
+            return "harmonic", "调性和谐，使用调性匹配过渡"
         else:
-            return "echo_fade", "差异较大，用回声效果掩盖"
+            if score >= 50:
+                return "harmonic", "调性匹配，推荐调性过渡"
+            else:
+                return "echo_fade", "调性匹配但差异大，用回声掩盖"
 
-    # 规则2: BPM接近，优先beat_sync
+    if bpm_diff_ratio <= 0.10 and bpm_score >= 70:
+        return "beat_sync", "BPM非常接近，节拍对齐丝滑"
+
     if bpm_diff_ratio <= 0.15 and bpm_score >= 55:
-        return "beat_sync", "BPM接近，节拍对齐更丝滑"
+        return "beat_sync", "BPM接近，节拍对齐更自然"
 
-    # 规则3: 调性匹配，harmonic
-    if key_score >= 65:
-        return "harmonic", "调性匹配，和声过渡更和谐"
-
-    # 规则4: 中等分数，crossfade
-    if score >= 45:
+    if score >= 60:
         return "crossfade", "使用平滑过渡"
 
-    # 规则5: 低分，echo
-    return "echo_fade", "差异较大，用回声效果掩盖"
+    if score >= 40:
+        return "echo_fade", "差异适中，回声效果更自然"
+
+    return "echo_fade", "差异较大，建议更换歌曲"
 
 
 class TrackAnalyzer:
@@ -231,6 +233,8 @@ class CompatibilityEvaluator:
             "beat_score": round(beat_score),
             "recommendation": recommendation,
             "reason": reason,
+            "key_a": track_a_info.get("key", "C"),
+            "key_b": track_b_info.get("key", "C"),
         }
 
         logger.info(f"兼容性评估: {result}")

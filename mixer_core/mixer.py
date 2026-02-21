@@ -57,8 +57,11 @@ class Mixer:
 
         logger.info(f"检测到 BPM: {track_a_path} = {bpm_a:.1f}, {track_b_path} = {bpm_b:.1f}")
 
-        # 兼容性评估
         compatibility_result = self.evaluate_compatibility(track_a_path, track_b_path)
+
+        key_a = compatibility_result.get("key_a", "C")
+        key_b = compatibility_result.get("key_b", "C")
+        logger.info(f"检测到调性: {key_a} -> {key_b}")
 
         # 检测歌曲结构（前奏/尾奏）
         seg_a = detect_segments(track_a_path, self.sr)
@@ -144,15 +147,16 @@ class Mixer:
         )
 
         # 应用过渡策略（传入节拍信息用于对齐，以及歌曲B的起始位置）
-        y_mixed = strategy_obj.apply(
-            y_a,
-            y_b,
-            self.sr,
-            transition_point,
-            beats_a=beats_a,
-            beats_b=beats_b,
-            transition_point_b=transition_point_b,
-        )
+        apply_kwargs = {
+            "beats_a": beats_a,
+            "beats_b": beats_b,
+            "transition_point_b": transition_point_b,
+        }
+        if actual_strategy == "harmonic":
+            apply_kwargs["key_a"] = key_a
+            apply_kwargs["key_b"] = key_b
+
+        y_mixed = strategy_obj.apply(y_a, y_b, self.sr, transition_point, **apply_kwargs)
 
         # 归一化避免爆音
         y_mixed = self._normalize(y_mixed)
