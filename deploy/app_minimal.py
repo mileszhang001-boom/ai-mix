@@ -202,18 +202,22 @@ def evaluate():
 # 启动
 if __name__ == "__main__":
     print("=" * 50)
-    print("环境变量检查：")
-    print(f"PORT: {os.environ.get('PORT', 'NOT SET')}")
-    print(f"UPLOAD_FOLDER: {os.environ.get('UPLOAD_FOLDER', 'NOT SET')}")
-
-    port_str = os.environ.get("PORT")
-    if port_str:
-        port = int(port_str)
-        print(f"使用环境变量 PORT: {port}")
-    else:
-        port = 5000
-        print(f"使用默认端口: {port}")
-
-    print(f"启动服务器在端口: {port}")
+    print("Render 启动检查")
     print("=" * 50)
+    print(f"PORT 环境变量: {os.environ.get('PORT', 'NOT SET')}")
+    print(f"环境变量数量: {len(os.environ)}")
+
+    # 强制要求 PORT 环境变量
+    port_str = os.environ.get("PORT")
+    if not port_str:
+        print("✗ 错误: PORT 环境变量未设置！")
+        print("   Render 必须自动设置 PORT 环境变量")
+        print("   如果没有设置，请检查 Render 配置")
+        sys.exit(1)
+
+    port = int(port_str)
+    print(f"✓ PORT: {port}")
+    print(f"✓ 启动服务器在端口 {port}")
+    print("=" * 50)
+
     app.run(host="0.0.0.0", port=port, debug=False, threaded=True)
