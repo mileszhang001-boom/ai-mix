@@ -216,6 +216,29 @@ if __name__ == "__main__":
     print(f"PORT 环境变量: {os.environ.get('PORT', 'NOT SET')}")
     print(f"环境变量数量: {len(os.environ)}")
 
+    print("检查系统依赖...")
+    import subprocess
+
+    try:
+        result = subprocess.run(["ffmpeg", "-version"], capture_output=True, text=True)
+        print(f"✓ ffmpeg: {result.stdout.split(chr(10))[0] if result.stdout else 'not found'}")
+    except Exception as e:
+        print(f"✗ ffmpeg: {e}")
+
+    try:
+        import soundfile
+
+        print(f"✓ soundfile: {soundfile.__version__}")
+    except Exception as e:
+        print(f"✗ soundfile: {e}")
+
+    try:
+        import librosa
+
+        print(f"✓ librosa: {librosa.__version__}")
+    except Exception as e:
+        print(f"✗ librosa: {e}")
+
     port_str = os.environ.get("PORT")
     if port_str:
         port = int(port_str)
