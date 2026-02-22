@@ -39,7 +39,7 @@ def get_mixer():
 app = Flask(__name__)
 
 # 配置
-app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
+app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10MB limit for Render compatibility
 app.config["UPLOAD_FOLDER"] = "/tmp/music-mix-uploads"
 app.config["OUTPUT_FOLDER"] = "/tmp/music-mix-outputs"
 
@@ -67,10 +67,15 @@ def health():
     return jsonify({"status": "ok"})
 
 
-@app.route("/api/test", methods=["POST"])
+@app.route("/api/test", methods=["GET", "POST"])
 def test():
-    print(f"\n[/api/test] 收到测试请求")
-    return jsonify({"status": "ok", "message": "API is working"})
+    print(f"\n[/api/test] 收到请求, method={request.method}")
+    return jsonify({"status": "ok", "message": "API is working", "method": request.method})
+
+
+@app.route("/api/ping", methods=["GET"])
+def ping():
+    return "pong"
 
 
 @app.route("/favicon.ico")
