@@ -67,6 +67,12 @@ def health():
     return jsonify({"status": "ok"})
 
 
+@app.route("/api/test", methods=["POST"])
+def test():
+    print(f"\n[/api/test] 收到测试请求")
+    return jsonify({"status": "ok", "message": "API is working"})
+
+
 @app.route("/favicon.ico")
 def favicon():
     return "", 204  # 返回空响应，忽略 favicon 请求
@@ -137,22 +143,24 @@ def get_output(filename):
 @app.route("/api/evaluate", methods=["POST"])
 def evaluate():
     import uuid
+    import time
+
+    start_time = time.time()
+
+    print(f"\n{'=' * 60}")
+    print(f"[{time.strftime('%H:%M:%S')}] 收到 /api/evaluate 请求")
+    print(f"Content-Type: {request.content_type}")
+    print(f"Content-Length: {request.content_length}")
 
     try:
         if "track_a" not in request.files or "track_b" not in request.files:
+            print("错误: 缺少文件")
             return jsonify({"error": "Missing files"}), 400
-
-        print("=" * 50)
-        print("开始评估...")
-
-        m = get_mixer()
-        print("Mixer 初始化完成")
 
         track_a = request.files["track_a"]
         track_b = request.files["track_b"]
 
-        # 记录文件名
-        print(f"Track A: {track_a.filename}")
+        print(f"Track A: {track_a.filename}, size: {request.content_length}")
         print(f"Track B: {track_b.filename}")
 
         track_a_path = os.path.join(
@@ -162,14 +170,21 @@ def evaluate():
             app.config["UPLOAD_FOLDER"], f"{uuid.uuid4()}_{secure_filename(track_b.filename)}"
         )
 
-        print("保存文件...")
+        print(f"保存文件到: {track_a_path}")
         track_a.save(track_a_path)
         track_b.save(track_b_path)
-        print("文件保存完成")
+        print(f"文件保存完成, 耗时: {time.time() - start_time:.2f}s")
 
-        print("开始分析...")
+        print("开始初始化 Mixer...")
+        t1 = time.time()
+        m = get_mixer()
+        print(f"Mixer 初始化完成, 耗时: {time.time() - t1:.2f}s")
+
+        print("开始分析音频...")
+        t2 = time.time()
         result = m.evaluate_compatibility(track_a_path, track_b_path)
-        print(f"评估完成: {result}")
+        print(f"分析完成, 耗时: {time.time() - t2:.2f}s")
+        print(f"评估结果: {result}")
 
         try:
             os.remove(track_a_path)
@@ -177,7 +192,9 @@ def evaluate():
         except:
             pass
 
-        print("=" * 50)
+        total_time = time.time() - start_time
+        print(f"总耗时: {total_time:.2f}s")
+        print("=" * 60)
 
         return jsonify(
             {
@@ -204,8 +221,8 @@ def evaluate():
         import traceback
 
         traceback.print_exc()
-        print("=" * 50)
-        return jsonify({"error": str(e)}), 500
+        print("=" * 60)
+        return jsonify({"error": str(e), "traceback": traceback.format_exc()}), 500
 
 
 # 启动
