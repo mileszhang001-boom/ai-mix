@@ -198,57 +198,55 @@ class CrossfadeStrategy(TransitionStrategy):
     ) -> np.ndarray:
         fade_samples = int(self._fade_duration * sr)
 
+        # 歌曲B开始位置（跳过前奏）
         start_b = int(transition_point_b * sr) if transition_point_b > 0 else 0
         if start_b >= len(audio_b):
             start_b = 0
 
+        # 确保过渡点有足够空间
         if transition_point < fade_samples:
             fade_samples = transition_point
+            transition_point = fade_samples
 
-        if self._skip_silence:
-            silence_segments = detect_silence(audio_a[transition_point - fade_samples :], sr)
-            if silence_segments:
-                fade_samples = min(fade_samples, len(audio_a) - transition_point)
-
+        # 节拍对齐
         if self._align_to_beat and beats_a:
             transition_point = find_nearest_beat(transition_point, beats_a, sr)
             if transition_point < fade_samples:
-                transition_point = fade_samples
+                transition_point = fade_samples * 2
 
         fade_samples = min(fade_samples, transition_point)
 
-        fade_out_curve = smooth_fade_curve(fade_samples, self._curve_type)[::-1]
+        fade_out_curve = smooth_fade_curve(fade_samples, self._curve_type)
         fade_in_curve = smooth_fade_curve(fade_samples, self._curve_type)
 
-        b_available = audio_b[start_b:]
-        tail_b = max(0, len(b_available) - fade_samples)
-        result_len = max(len(audio_a), transition_point) + tail_b
+        # 歌曲A完整长度 + 歌曲B从start_b开始的部分
+        b_tail = max(0, len(audio_b) - start_b - fade_samples)
+        result_len = len(audio_a) + b_tail
         result = np.zeros(result_len)
 
-        copy_a = min(len(audio_a), transition_point - fade_samples)
-        if copy_a > 0:
-            result[:copy_a] = audio_a[:copy_a]
+        # 1. 歌曲A完整复制到结果（从0到transition_point）
+        result[:transition_point] = audio_a[:transition_point]
 
-        a_fade_start = max(0, transition_point - fade_samples)
-        a_fade_len = min(fade_samples, len(audio_a) - a_fade_start)
-        if a_fade_len > 0:
-            fade_out_data = audio_a[a_fade_start : a_fade_start + a_fade_len].copy()
-            fade_out_data *= fade_out_curve[-a_fade_len:]
-            result[a_fade_start : a_fade_start + a_fade_len] = fade_out_data
+        # 2. 歌曲A过渡区淡出（从transition_point-fade_samples到transition_point）
+        fade_start = transition_point - fade_samples
+        for i in range(fade_samples):
+            if fade_start + i < len(audio_a):
+                result[fade_start + i] *= fade_out_curve[i]
 
-        b_fade_samples = min(fade_samples, len(b_available))
-        b_fade_data = b_available[:b_fade_samples].copy()
-        b_fade_data *= fade_in_curve[:b_fade_samples]
+        # 3. 歌曲B淡入叠加到过渡区
+        b_fade_data = audio_b[start_b : start_b + fade_samples].copy()
+        b_fade_data *= fade_in_curve
 
-        overlap_start = a_fade_start
-        overlap_len = min(b_fade_samples, result_len - overlap_start)
-        result[overlap_start : overlap_start + overlap_len] += b_fade_data[:overlap_len]
+        # 叠加到过渡区
+        overlap_end = min(fade_start + fade_samples, result_len)
+        b_len = overlap_end - fade_start
+        result[fade_start:overlap_end] += b_fade_data[:b_len]
 
-        if b_fade_samples < len(b_available):
-            b_remaining = b_available[b_fade_samples:]
-            rem_start = overlap_start + overlap_len
-            copy_len = min(len(b_remaining), result_len - rem_start)
-            result[rem_start : rem_start + copy_len] = b_remaining[:copy_len]
+        # 4. 歌曲B剩余部分
+        if start_b + fade_samples < len(audio_b):
+            b_remaining = audio_b[start_b + fade_samples :]
+            rem_start = transition_point
+            result[rem_start : rem_start + len(b_remaining)] = b_remaining
 
         return result
 
