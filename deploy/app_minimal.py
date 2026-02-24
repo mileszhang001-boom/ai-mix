@@ -38,8 +38,8 @@ def get_mixer():
 # 创建 Flask 应用
 app = Flask(__name__)
 
-# 配置
-app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10MB limit for Render compatibility
+# 配置 - Render 免费层限制约 4.5MB
+app.config["MAX_CONTENT_LENGTH"] = 4 * 1024 * 1024  # 4MB limit
 app.config["UPLOAD_FOLDER"] = "/tmp/music-mix-uploads"
 app.config["OUTPUT_FOLDER"] = "/tmp/music-mix-outputs"
 
@@ -158,6 +158,10 @@ def evaluate():
     print(f"Content-Length: {request.content_length}")
 
     try:
+        from werkzeug.exceptions import RequestEntityTooLarge
+
+        app.config["MAX_CONTENT_LENGTH"] = 4 * 1024 * 1024
+
         if "track_a" not in request.files or "track_b" not in request.files:
             print("错误: 缺少文件")
             return jsonify({"error": "Missing files"}), 400
@@ -165,8 +169,20 @@ def evaluate():
         track_a = request.files["track_a"]
         track_b = request.files["track_b"]
 
-        print(f"Track A: {track_a.filename}, size: {request.content_length}")
-        print(f"Track B: {track_b.filename}")
+        # 检查文件大小
+        track_a.seek(0, 2)
+        size_a = track_a.tell()
+        track_a.seek(0)
+        track_b.seek(0, 2)
+        size_b = track_b.tell()
+        track_b.seek(0)
+
+        max_size = 4 * 1024 * 1024  # 4MB
+        if size_a > max_size or size_b > max_size:
+            return jsonify({"error": f"文件太大，请使用小于 4MB 的音频文件"}), 400
+
+        print(f"Track A: {track_a.filename}, size: {size_a}")
+        print(f"Track B: {track_b.filename}, size: {size_b}")
 
         track_a_path = os.path.join(
             app.config["UPLOAD_FOLDER"], f"{uuid.uuid4()}_{secure_filename(track_a.filename)}"
