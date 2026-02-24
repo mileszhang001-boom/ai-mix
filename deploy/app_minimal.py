@@ -38,8 +38,8 @@ def get_mixer():
 # 创建 Flask 应用
 app = Flask(__name__)
 
-# 配置 - Render 免费层限制约 4.5MB
-app.config["MAX_CONTENT_LENGTH"] = 4 * 1024 * 1024  # 4MB limit
+# 配置 - Railway 免费层支持更大文件
+app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024  # 50MB
 app.config["UPLOAD_FOLDER"] = "/tmp/music-mix-uploads"
 app.config["OUTPUT_FOLDER"] = "/tmp/music-mix-outputs"
 
