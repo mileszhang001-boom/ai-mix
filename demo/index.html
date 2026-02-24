@@ -549,70 +549,6 @@
         let currentStrategy = 'crossfade';
         let audioContext = null;
         
-        // 压缩音频文件到指定大小（通过重采样和单声道）
-        async function compressAudio(file, targetSizeKB = 3500) {
-            const ctx = getContext();
-            
-            try {
-                showLoading('处理音频中...');
-                
-                // 解码音频
-                const arrayBuffer = await file.arrayBuffer();
-                const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
-                
-                // 计算当前大小
-                const currentSizeKB = file.size / 1024;
-                console.log(`原始文件大小: ${currentSizeKB.toFixed(1)} KB`);
-                
-                // 如果文件已经足够小，直接返回
-                if (currentSizeKB <= targetSizeKB) {
-                    hideLoading();
-                    return file;
-                }
-                
-                // 需要压缩：创建降采样的单声道版本
-                const targetSampleRate = 22050; // 降低采样率
-                const monoCtx = new OfflineAudioContext(1, audioBuffer.length, targetSampleRate);
-                
-                // 降采样
-                const monoBuffer = monoCtx.createBuffer(1, audioBuffer.length, targetSampleRate);
-                const monoData = monoBuffer.getChannelData(0);
-                const originalData = audioBuffer.getChannelData(0);
-                
-                // 简单的降采样
-                const ratio = audioBuffer.sampleRate / targetSampleRate;
-                for (let i = 0; i < monoData.length; i++) {
-                    const srcIdx = Math.floor(i * ratio);
-                    if (srcIdx < originalData.length) {
-                        // 混合所有声道
-                        let sum = originalData[srcIdx];
-                        for (let ch = 1; ch < audioBuffer.numberOfChannels; ch++) {
-                            sum += audioBuffer.getChannelData(ch)[srcIdx];
-                        }
-                        monoData[i] = sum / audioBuffer.numberOfChannels;
-                    }
-                }
-                
-                // 渲染
-                const monoSource = monoCtx.createBufferSource();
-                monoSource.buffer = monoBuffer;
-                monoSource.connect(monoCtx.destination);
-                monoSource.start();
-                
-                const renderedBuffer = await monoCtx.startRendering();
-                const wavBlob = bufferToWav(renderedBuffer);
-                
-                console.log(`压缩后大小: ${(wavBlob.size / 1024).toFixed(1)} KB`);
-                
-                hideLoading();
-                return wavBlob;
-            } catch (err) {
-                hideLoading();
-                console.error('压缩失败:', err);
-                return file;
-            }
-        }
-        
         function getContext() {
             if (!audioContext) {
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -752,26 +688,9 @@
             showLoading('正在评估兼容性...');
             
             try {
-                // 检查文件大小，必要时压缩
-                const maxSizeKB = 3500;
-                let fileA = audioA;
-                let fileB = audioB;
-                
-                if (audioA.size > maxSizeKB * 1024) {
-                    showLoading('压缩音频A中...');
-                    fileA = await compressAudio(audioA, maxSizeKB);
-                }
-                
-                if (audioB.size > maxSizeKB * 1024) {
-                    showLoading('压缩音频B中...');
-                    fileB = await compressAudio(audioB, maxSizeKB);
-                }
-                
-                showLoading('上传并评估...');
-                
                 const form = new FormData();
-                form.append('track_a', fileA);
-                form.append('track_b', fileB);
+                form.append('track_a', audioA);
+                form.append('track_b', audioB);
                 
                 const res = await fetch(API_BASE + '/api/evaluate', {
                     method: 'POST',
@@ -848,26 +767,9 @@
             hideError();
             
             try {
-                // 检查文件大小，必要时压缩
-                const maxSizeKB = 3500;
-                let fileA = audioA;
-                let fileB = audioB;
-                
-                if (audioA.size > maxSizeKB * 1024) {
-                    showLoading('压缩音频A中...');
-                    fileA = await compressAudio(audioA, maxSizeKB);
-                }
-                
-                if (audioB.size > maxSizeKB * 1024) {
-                    showLoading('压缩音频B中...');
-                    fileB = await compressAudio(audioB, maxSizeKB);
-                }
-                
-                showLoading('上传并生成混音...');
-                
                 const form = new FormData();
-                form.append('track_a', fileA);
-                form.append('track_b', fileB);
+                form.append('track_a', audioA);
+                form.append('track_b', audioB);
                 form.append('strategy', currentStrategy);
                 
                 const res = await fetch(API_BASE + '/api/mix', {
