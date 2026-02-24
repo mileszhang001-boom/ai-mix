@@ -562,14 +562,6 @@
                 document.getElementById('uploadA').classList.remove('empty');
                 document.getElementById('uploadA').classList.add('has-file');
                 document.getElementById('nameA').textContent = audioA.name;
-                
-                showLoading('分析音频A...');
-                const ctx = getContext();
-                const arrayBuffer = await audioA.arrayBuffer();
-                bufferA = await ctx.decodeAudioData(arrayBuffer);
-                infoA = await analyzeAudio(bufferA, ctx);
-                hideLoading();
-                
                 checkCanConfirm();
             }
         });
@@ -580,14 +572,6 @@
                 document.getElementById('uploadB').classList.remove('empty');
                 document.getElementById('uploadB').classList.add('has-file');
                 document.getElementById('nameB').textContent = audioB.name;
-                
-                showLoading('分析音频B...');
-                const ctx = getContext();
-                const arrayBuffer = await audioB.arrayBuffer();
-                bufferB = await ctx.decodeAudioData(arrayBuffer);
-                infoB = await analyzeAudio(bufferB, ctx);
-                hideLoading();
-                
                 checkCanConfirm();
             }
         });
@@ -678,7 +662,7 @@
                 return;
             }
             
-            document.getElementById('confirmBtn').disabled = !(bufferA && bufferB);
+            document.getElementById('confirmBtn').disabled = !(audioA && audioB);
         }
         
         function showLoading(msg) {
