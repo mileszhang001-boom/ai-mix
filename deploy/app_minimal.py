@@ -5,6 +5,7 @@ Flask API Server for music-mix (Minimal Version)
 
 import os
 import sys
+import werkzeug
 
 # 设置项目根目录
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -49,6 +50,14 @@ os.makedirs(app.config["OUTPUT_FOLDER"], exist_ok=True)
 CORS(app)
 
 print("✓ 应用配置完成")
+
+
+# 全局错误处理
+@app.errorhandler(413)
+@app.errorhandler(werkzeug.exceptions.RequestEntityTooLarge)
+def handle_large_file(e):
+    print(f"文件太大错误: {e}")
+    return jsonify({"error": "文件太大，请使用小于 4MB 的音频文件"}), 413
 
 
 # 路由
