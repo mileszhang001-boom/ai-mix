@@ -533,6 +533,9 @@
     <div class="error" id="error" style="display:none;"></div>
     
     <script>
+        // 配置后端 API 地址（Render 部署的地址）
+        const API_BASE = 'https://ai-mix.onrender.com';
+        
         let audioA = null, audioB = null;
         let bufferA = null, bufferB = null;
         let infoA = null, infoB = null;
@@ -689,70 +692,74 @@
             document.getElementById('error').style.display = 'none';
         }
         
-        function analyzeTracks() {
+        async function analyzeTracks() {
             hideError();
+            showLoading('正在评估兼容性...');
             
-            const bpmDiff = Math.abs(infoA.bpm - infoB.bpm) / Math.max(infoA.bpm, infoB.bpm);
-            const bpmScore = Math.max(20, Math.round(90 - bpmDiff * 140));
-            
-            // 调性匹配 (简化)
-            const keyScore = 50 + Math.round(Math.random() * 40);
-            
-            // 节奏稳定性
-            const beatScore = Math.round(50 + Math.random() * 35);
-            
-            // 综合评分
-            const score = Math.round(bpmScore * 0.45 + keyScore * 0.35 + beatScore * 0.2);
-            
-            // 推荐策略
-            let recommendation, reason;
-            if (bpmDiff < 0.1) {
-                recommendation = 'beat_sync';
-                reason = 'BPM接近，节拍对齐更丝滑';
-            } else if (bpmDiff > 0.25) {
-                recommendation = 'echo_fade';
-                reason = 'BPM差异大，回声效果更自然';
-            } else {
-                recommendation = 'crossfade';
-                reason = '使用平滑过渡';
+            try {
+                const form = new FormData();
+                form.append('track_a', audioA);
+                form.append('track_b', audioB);
+                
+                const res = await fetch(API_BASE + '/api/evaluate', {
+                    method: 'POST',
+                    body: form
+                });
+                
+                if (!res.ok) {
+                    throw new Error(`评估失败: ${res.status}`);
+                }
+                
+                const data = await res.json();
+                
+                if (!data.success) {
+                    throw new Error(data.error || '评估失败');
+                }
+                
+                const score = data.score;
+                
+                document.getElementById('evalPlaceholder').style.display = 'none';
+                document.getElementById('evalResult').style.display = 'block';
+                
+                const scoreEl = document.getElementById('evalScore');
+                scoreEl.textContent = score;
+                
+                const verdictEl = document.getElementById('evalVerdict');
+                if (score >= 90) {
+                    scoreEl.className = 'eval-score excellent';
+                    verdictEl.textContent = '优秀 - 非常适合混音';
+                    verdictEl.className = 'eval-verdict excellent';
+                } else if (score >= 75) {
+                    scoreEl.className = 'eval-score good';
+                    verdictEl.textContent = '良好 - 适合尝试混音';
+                    verdictEl.className = 'eval-verdict good';
+                } else if (score >= 60) {
+                    scoreEl.className = 'eval-score fair';
+                    verdictEl.textContent = '一般 - 混音效果可能平平';
+                    verdictEl.className = 'eval-verdict fair';
+                } else {
+                    scoreEl.className = 'eval-score poor';
+                    verdictEl.textContent = '较差 - 建议更换歌曲';
+                    verdictEl.className = 'eval-verdict poor';
+                }
+                
+                document.getElementById('evalDetails').innerHTML = 
+                    `<span>BPM: ${data.bpm_score || '-'}</span><span>调性: ${data.key_score || '-'}</span><span>节奏: ${data.beat_score || '-'}</span>`;
+                
+                document.getElementById('evalRecommend').innerHTML = `推荐策略: <span>${data.recommendation_name || data.recommendation}</span>`;
+                
+                document.querySelectorAll('.strategy-btn').forEach(btn => btn.classList.remove('disabled'));
+                document.getElementById('genBtn').disabled = false;
+                
+                window.evaluationData = data;
+                selectStrategy(data.recommendation);
+                
+            } catch (err) {
+                showError('评估失败: ' + err.message);
+                console.error(err);
+            } finally {
+                hideLoading();
             }
-            
-            // 更新UI
-            document.getElementById('evalPlaceholder').style.display = 'none';
-            document.getElementById('evalResult').style.display = 'block';
-            
-            const scoreEl = document.getElementById('evalScore');
-            scoreEl.textContent = score;
-            
-            const verdictEl = document.getElementById('evalVerdict');
-            if (score >= 90) {
-                scoreEl.className = 'eval-score excellent';
-                verdictEl.textContent = '优秀 - 非常适合混音';
-                verdictEl.className = 'eval-verdict excellent';
-            } else if (score >= 75) {
-                scoreEl.className = 'eval-score good';
-                verdictEl.textContent = '良好 - 适合尝试混音';
-                verdictEl.className = 'eval-verdict good';
-            } else if (score >= 60) {
-                scoreEl.className = 'eval-score fair';
-                verdictEl.textContent = '一般 - 混音效果可能平平';
-                verdictEl.className = 'eval-verdict fair';
-            } else {
-                scoreEl.className = 'eval-score poor';
-                verdictEl.textContent = '较差 - 建议更换歌曲';
-                verdictEl.className = 'eval-verdict poor';
-            }
-            
-            document.getElementById('evalDetails').innerHTML = 
-                `<span>BPM: ${bpmScore}</span><span>调性: ${keyScore}</span><span>节奏: ${beatScore}</span>`;
-            
-            const recNames = { crossfade: 'Crossfade', beat_sync: 'Beat-sync', echo_fade: 'Echo' };
-            document.getElementById('evalRecommend').innerHTML = `推荐策略: <span>${recNames[recommendation]}</span>`;
-            
-            document.querySelectorAll('.strategy-btn').forEach(btn => btn.classList.remove('disabled'));
-            document.getElementById('genBtn').disabled = false;
-            
-            selectStrategy(recommendation);
         }
         
         function selectStrategy(strategy) {
@@ -765,98 +772,49 @@
         }
         
         async function generateMix() {
-            showLoading('生成混音中...');
+            showLoading('生成混音中，请稍候...');
             hideError();
             
             try {
-                const ctx = getContext();
-                const sampleRate = ctx.sampleRate;
+                const form = new FormData();
+                form.append('track_a', audioA);
+                form.append('track_b', audioB);
+                form.append('strategy', currentStrategy);
                 
-                // 计算过渡点
-                const durationA = bufferA.duration;
-                const transitionTime = durationA * 0.75;
-                const transitionSamples = Math.floor(transitionTime * sampleRate);
-                const fadeDuration = 8; // 秒
-                const fadeSamples = Math.floor(fadeDuration * sampleRate);
+                const res = await fetch(API_BASE + '/api/mix', {
+                    method: 'POST',
+                    body: form
+                });
                 
-                // 创建混音buffer
-                const totalLength = transitionSamples + bufferB.length;
-                const mixedBuffer = ctx.createBuffer(2, totalLength, sampleRate);
-                const leftChannel = mixedBuffer.getChannelData(0);
-                const rightChannel = mixedBuffer.getChannelData(1);
-                
-                const leftA = bufferA.getChannelData(0);
-                const rightA = bufferA.numberOfChannels > 1 ? bufferA.getChannelData(1) : leftA;
-                const leftB = bufferB.getChannelData(0);
-                const rightB = bufferB.numberOfChannels > 1 ? bufferB.getChannelData(1) : leftB;
-                
-                // 混音逻辑
-                for (let i = 0; i < totalLength; i++) {
-                    let left = 0, right = 0;
-                    
-                    // 歌曲 A 部分
-                    if (i < bufferA.length) {
-                        let gainA = 1;
-                        
-                        // 淡出
-                        if (i > transitionSamples - fadeSamples) {
-                            const fadeProgress = (i - (transitionSamples - fadeSamples)) / fadeSamples;
-                            gainA = Math.cos(fadeProgress * Math.PI / 2);
-                            
-                            // Echo 效果
-                            if (currentStrategy === 'echo_fade') {
-                                const echoDelay = Math.floor(0.3 * sampleRate);
-                                if (i > echoDelay && i - echoDelay < bufferA.length) {
-                                    left += leftA[i - echoDelay] * 0.3 * fadeProgress;
-                                    right += rightA[i - echoDelay] * 0.3 * fadeProgress;
-                                }
-                            }
-                        }
-                        
-                        left += leftA[i] * gainA;
-                        right += rightA[i] * gainA;
-                    }
-                    
-                    // 歌曲 B 部分
-                    const bIndex = i - transitionSamples + fadeSamples;
-                    if (bIndex >= 0 && bIndex < bufferB.length) {
-                        let gainB = 1;
-                        
-                        // 淡入
-                        if (bIndex < fadeSamples) {
-                            const fadeProgress = bIndex / fadeSamples;
-                            gainB = Math.sin(fadeProgress * Math.PI / 2);
-                            
-                            // Beat-sync: 调整播放速度
-                            if (currentStrategy === 'beat_sync' && infoA.bpm > 0 && infoB.bpm > 0) {
-                                // 简化处理，实际需要重采样
-                            }
-                        }
-                        
-                        left += leftB[bIndex] * gainB;
-                        right += rightB[bIndex] * gainB;
-                    }
-                    
-                    leftChannel[i] = Math.max(-1, Math.min(1, left));
-                    rightChannel[i] = Math.max(-1, Math.min(1, right));
+                if (!res.ok) {
+                    throw new Error(`生成失败: ${res.status}`);
                 }
                 
-                // 转换为 WAV
-                const wavBlob = bufferToWav(mixedBuffer);
-                const url = URL.createObjectURL(wavBlob);
+                const data = await res.json();
+                
+                if (!data.success) {
+                    throw new Error(data.error || '生成失败');
+                }
+                
+                const outputUrl = API_BASE + data.output_url;
                 
                 // 绘制波形
-                drawWave(leftChannel, transitionSamples, totalLength, sampleRate);
+                await drawWaveFromUrl(outputUrl, data.transition_point, data.duration);
                 
                 // 更新UI
-                const names = { crossfade: 'Crossfade', beat_sync: 'Beat-sync', echo_fade: 'Echo' };
-                document.getElementById('resStrategy').textContent = names[currentStrategy];
-                document.getElementById('resDuration').textContent = fmtTime(totalLength / sampleRate);
-                document.getElementById('resTransition').textContent = fmtTime(transitionTime);
+                const names = { 
+                    crossfade: 'Crossfade', 
+                    beat_sync: 'Beat-sync', 
+                    echo_fade: 'Echo',
+                    harmonic: 'Harmonic'
+                };
+                document.getElementById('resStrategy').textContent = names[data.strategy] || data.strategy;
+                document.getElementById('resDuration').textContent = fmtTime(data.duration);
+                document.getElementById('resTransition').textContent = fmtTime(data.transition_point);
                 
                 document.getElementById('resultPlaceholder').style.display = 'none';
                 document.getElementById('resultContent').classList.add('show');
-                document.getElementById('player').src = url;
+                document.getElementById('player').src = outputUrl;
                 document.getElementById('player').play();
                 
                 hideLoading();
@@ -921,6 +879,84 @@
             for (let i = 0; i < string.length; i++) {
                 view.setUint8(offset + i, string.charCodeAt(i));
             }
+        }
+        
+        async function drawWaveFromUrl(url, transition, duration) {
+            const canvas = document.getElementById('waveMix');
+            const ctx = canvas.getContext('2d');
+            
+            const container = canvas.parentElement;
+            const containerWidth = container.clientWidth - 24;
+            canvas.width = containerWidth * 2;
+            canvas.height = 120;
+            canvas.style.width = containerWidth + 'px';
+            canvas.style.height = '60px';
+            
+            const resp = await fetch(url);
+            const ab = await resp.arrayBuffer();
+            const audioData = await new AudioContext().decodeAudioData(ab);
+            
+            const w = canvas.width;
+            const h = canvas.height;
+            const channelData = audioData.getChannelData(0);
+            const samplesPerPixel = Math.max(1, Math.floor(channelData.length / w));
+            
+            const transX = Math.floor((transition / duration) * w);
+            const fadeWidth = Math.floor(w * 0.12);
+            const fadeStart = Math.max(0, transX - fadeWidth / 2);
+            const fadeEnd = Math.min(w, transX + fadeWidth / 2);
+            
+            ctx.fillStyle = '#0a0a14';
+            ctx.fillRect(0, 0, w, h);
+            
+            function lerpColor(c1, c2, t) {
+                const r = Math.round(c1[0] + (c2[0] - c1[0]) * t);
+                const g = Math.round(c1[1] + (c2[1] - c1[1]) * t);
+                const b = Math.round(c1[2] + (c2[2] - c1[2]) * t);
+                return `rgb(${r},${g},${b})`;
+            }
+            
+            const colorA = [248, 113, 113];
+            const colorMix = [192, 132, 252];
+            const colorB = [96, 165, 250];
+            
+            for (let i = 0; i < w; i++) {
+                let min = 1, max = -1;
+                const startIdx = i * samplesPerPixel;
+                for (let j = 0; j < samplesPerPixel && startIdx + j < channelData.length; j++) {
+                    const d = channelData[startIdx + j];
+                    if (d < min) min = d;
+                    if (d > max) max = d;
+                }
+                
+                const barHeight = Math.max(1, (max - min) * h / 2);
+                const y = (1 + min) * h / 2;
+                
+                let color;
+                if (i < fadeStart) {
+                    color = lerpColor(colorA, [248, 180, 113], i / fadeStart * 0.3);
+                } else if (i < fadeEnd) {
+                    const t = (i - fadeStart) / (fadeEnd - fadeStart);
+                    if (t < 0.5) {
+                        color = lerpColor(colorA, colorMix, t * 2);
+                    } else {
+                        color = lerpColor(colorMix, colorB, (t - 0.5) * 2);
+                    }
+                } else {
+                    const progress = (i - fadeEnd) / (w - fadeEnd);
+                    color = lerpColor(colorB, [56, 189, 248], progress * 0.3);
+                }
+                
+                ctx.fillStyle = color;
+                ctx.fillRect(i, y, 1, barHeight);
+            }
+            
+            const glowGrad = ctx.createLinearGradient(fadeStart, 0, fadeEnd, 0);
+            glowGrad.addColorStop(0, 'rgba(192, 132, 252, 0)');
+            glowGrad.addColorStop(0.5, 'rgba(192, 132, 252, 0.2)');
+            glowGrad.addColorStop(1, 'rgba(192, 132, 252, 0)');
+            ctx.fillStyle = glowGrad;
+            ctx.fillRect(fadeStart, 0, fadeEnd - fadeStart, h);
         }
         
         function drawWave(audioData, transitionSamples, totalSamples, sampleRate) {
