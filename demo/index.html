@@ -549,68 +549,67 @@
         let currentStrategy = 'crossfade';
         let audioContext = null;
         
-        // 压缩音频文件到指定大小
-        async function compressAudio(file, targetSizeKB = 3000) {
+        // 压缩音频文件到指定大小（通过重采样和单声道）
+        async function compressAudio(file, targetSizeKB = 3500) {
             const ctx = getContext();
-            showLoading('压缩音频中...');
             
             try {
+                showLoading('处理音频中...');
+                
                 // 解码音频
                 const arrayBuffer = await file.arrayBuffer();
                 const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
                 
-                // 重新编码为较小尺寸
-                const offlineCtx = new OfflineAudioContext(
-                    audioBuffer.numberOfChannels,
-                    audioBuffer.length,
-                    audioBuffer.sampleRate
-                );
+                // 计算当前大小
+                const currentSizeKB = file.size / 1024;
+                console.log(`原始文件大小: ${currentSizeKB.toFixed(1)} KB`);
                 
-                const source = offlineCtx.createBufferSource();
-                source.buffer = audioBuffer;
-                source.connect(offlineCtx.destination);
-                source.start();
-                
-                const renderedBuffer = await offlineCtx.startRendering();
-                
-                // 转换为 WAV (无损压缩，但可以减少时长)
-                const wavBlob = bufferToWav(renderedBuffer);
-                
-                // 如果还是太大，尝试降低采样率
-                let resultBlob = wavBlob;
-                let attempts = 0;
-                
-                while (resultBlob.size > targetSizeKB * 1024 && attempts < 3) {
-                    // 降低为单声道，减小一半大小
-                    const monoCtx = new OfflineAudioContext(1, renderedBuffer.length, renderedBuffer.sampleRate);
-                    const monoSource = monoCtx.createBufferSource();
-                    
-                    // 混合为单声道
-                    const monoBuffer = monoCtx.createBuffer(1, renderedBuffer.length, renderedBuffer.sampleRate);
-                    const monoData = monoBuffer.getChannelData(0);
-                    for (let i = 0; i < renderedBuffer.length; i++) {
-                        let sum = 0;
-                        for (let ch = 0; ch < renderedBuffer.numberOfChannels; ch++) {
-                            sum += renderedBuffer.getChannelData(ch)[i];
-                        }
-                        monoData[i] = sum / renderedBuffer.numberOfChannels;
-                    }
-                    
-                    monoSource.buffer = monoBuffer;
-                    monoSource.connect(monoCtx.destination);
-                    monoSource.start();
-                    
-                    const monoRendered = await monoCtx.startRendering();
-                    resultBlob = bufferToWav(monoRendered);
-                    attempts++;
+                // 如果文件已经足够小，直接返回
+                if (currentSizeKB <= targetSizeKB) {
+                    hideLoading();
+                    return file;
                 }
                 
+                // 需要压缩：创建降采样的单声道版本
+                const targetSampleRate = 22050; // 降低采样率
+                const monoCtx = new OfflineAudioContext(1, audioBuffer.length, targetSampleRate);
+                
+                // 降采样
+                const monoBuffer = monoCtx.createBuffer(1, audioBuffer.length, targetSampleRate);
+                const monoData = monoBuffer.getChannelData(0);
+                const originalData = audioBuffer.getChannelData(0);
+                
+                // 简单的降采样
+                const ratio = audioBuffer.sampleRate / targetSampleRate;
+                for (let i = 0; i < monoData.length; i++) {
+                    const srcIdx = Math.floor(i * ratio);
+                    if (srcIdx < originalData.length) {
+                        // 混合所有声道
+                        let sum = originalData[srcIdx];
+                        for (let ch = 1; ch < audioBuffer.numberOfChannels; ch++) {
+                            sum += audioBuffer.getChannelData(ch)[srcIdx];
+                        }
+                        monoData[i] = sum / audioBuffer.numberOfChannels;
+                    }
+                }
+                
+                // 渲染
+                const monoSource = monoCtx.createBufferSource();
+                monoSource.buffer = monoBuffer;
+                monoSource.connect(monoCtx.destination);
+                monoSource.start();
+                
+                const renderedBuffer = await monoCtx.startRendering();
+                const wavBlob = bufferToWav(renderedBuffer);
+                
+                console.log(`压缩后大小: ${(wavBlob.size / 1024).toFixed(1)} KB`);
+                
                 hideLoading();
-                return resultBlob;
+                return wavBlob;
             } catch (err) {
                 hideLoading();
                 console.error('压缩失败:', err);
-                return file; // 返回原文件
+                return file;
             }
         }
         
